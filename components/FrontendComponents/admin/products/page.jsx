@@ -8,11 +8,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Pencil, Trash2, Eye } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useRouter } from "next/navigation";
+import { deleteProduct } from "@/server/Functionality-product-page"
+// import updateProduct agar tumhare paas hai, warna bana lo:
+import { updateProduct } from "@/server/Functionality-product-page"
 
 export default function ProductPage() {
-  const [products, setProducts] = useState([]); // ✅ add this
+  const [products, setProducts] = useState([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
+  const [editingProductId, setEditingProductId] = useState(null); // 📝 kon sa product edit ho raha hai
+  const [editFields, setEditFields] = useState({});               // 📝 edit fields temporary store
   const router = useRouter();
 
   useEffect(() => {
@@ -20,7 +25,7 @@ export default function ProductPage() {
       const res = await fetch('/api/admin/products');
       const data = await res.json();
       console.log(data);
-      setProducts(data); // ✅ store in state
+      setProducts(data);
     }
     fetchProducts();
   }, []);
@@ -78,18 +83,99 @@ export default function ProductPage() {
                   <TableCell>
                     <img src={product.images[0]} alt={product.name} className="w-12 h-12 object-cover rounded" />
                   </TableCell>
-                  <TableCell>{product.name}</TableCell>
-                  <TableCell>{product.discountedPrice}</TableCell>
-                  <TableCell>{product.quantity}</TableCell>
-                  <TableCell className="w-20 whitespace-normal break-words">{product.categories.join(", ")}</TableCell>
+
+                  {/* ✅ agar edit mode hai toh input fields dikhao, warna text */}
+                  {editingProductId === product._id ? (
+                    <>
+                      <TableCell>
+                        <Input
+                          value={editFields.name}
+                          onChange={(e) => setEditFields({ ...editFields, name: e.target.value })}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          value={editFields.discountedPrice}
+                          onChange={(e) => setEditFields({ ...editFields, discountedPrice: e.target.value })}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          value={editFields.quantity}
+                          onChange={(e) => setEditFields({ ...editFields, quantity: e.target.value })}
+                        />
+                      </TableCell>
+                      <TableCell className="w-20 whitespace-normal break-words">
+                        <Input
+                          value={editFields.categories}
+                          onChange={(e) => setEditFields({ ...editFields, categories: e.target.value })}
+                        />
+                        {/* yahan comma separated likhe user */}
+                      </TableCell>
+                    </>
+                  ) : (
+                    <>
+                      <TableCell>{product.name}</TableCell>
+                      <TableCell>{product.discountedPrice}</TableCell>
+                      <TableCell>{product.quantity}</TableCell>
+                      <TableCell className="w-20 whitespace-normal break-words">{product.categories.join(", ")}</TableCell>
+                    </>
+                  )}
+
                   <TableCell className="text-right space-x-2">
-                    <Button size="icon" variant="outline">
+                    <Button size="icon" variant="outline" onClick={() => {
+                      router.push(`/admin/products/singleProductPage?id=${product._id}`)
+
+                    }}>
                       <Eye className="w-4 h-4" />
                     </Button>
-                    <Button size="icon" variant="outline">
-                      <Pencil className="w-4 h-4" />
-                    </Button>
-                    <Button size="icon" variant="destructive">
+
+                    {editingProductId === product._id ? (
+                      // ✅ edit mode me Save button dikhao
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        onClick={async () => {
+                          await updateProduct({
+                            _id: product._id,
+                            name: editFields.name,
+                            discountedPrice: editFields.discountedPrice,
+                            quantity: editFields.quantity,
+                            categories: editFields.categories.split(",").map(c => c.trim())
+                          });
+                          setEditingProductId(null); // exit edit mode
+                          window.location.reload();  // refresh
+                        }}
+                      >
+                        ✔️
+                      </Button>
+                    ) : (
+                      // ✅ normal mode me edit button
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        onClick={() => {
+                          setEditingProductId(product._id);
+                          setEditFields({
+                            name: product.name,
+                            discountedPrice: product.discountedPrice,
+                            quantity: product.quantity,
+                            categories: product.categories.join(", ")
+                          });
+                          console.log("Editing product with ID:", product._id);
+
+                        }}
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                    )}
+
+                    <Button size="icon" variant="destructive" onClick={async () => {
+                      await deleteProduct(product._id);
+                      window.location.reload();
+                    }}>
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </TableCell>

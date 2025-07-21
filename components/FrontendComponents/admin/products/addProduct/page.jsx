@@ -30,6 +30,8 @@ export default function AddProductPage() {
   const [done, setdone] = useState("")
 
   const router = useRouter()
+  const [imageUrls, setImageUrls] = useState([])
+  const [loading, setloading] = useState(false);
   const { register, handleSubmit, setValue } = useForm()
 
   // ✅ Edge Store ka hook initialize
@@ -82,12 +84,12 @@ export default function AddProductPage() {
     // ✅ form data me bhi images ki value set kar rahe hain
     setValue("images", uploadedUrls)
   }
-
   async function onSubmit(data) {
+    setloading(true);
     console.log("FORM DATA ", data);
 
- data.categories = categories;
- console.log("categories stored in form data")
+    data.categories = categories;
+    console.log("categories stored in form data")
 
     // edge store :
 
@@ -114,6 +116,8 @@ export default function AddProductPage() {
     // router.push("/admin/products")
 
     setdone("done");
+    setloading(false);
+
 
     // try {
     //   data.categories = categories         // categories bhi add kar rahe hain
@@ -143,6 +147,12 @@ export default function AddProductPage() {
       <h1 className="text-2xl md:text-3xl font-bold mb-6 tracking-tight text-gray-800 dark:text-white">
         🛍️ Add New Product - A Store
       </h1>
+      {loading && (
+        <div className="fixed top-10 right-10 bg-white shadow-lg border p-4 rounded z-50">
+          <p className="text-gray-800">Loading...</p>
+        </div>
+      )}
+
 
       <Card>
         <CardHeader>
@@ -227,9 +237,9 @@ export default function AddProductPage() {
                 router.push("/admin/products")
               }
             }}>Add Product</Button>
-        </form>
-      </CardContent>
-    </Card>
+          </form>
+        </CardContent>
+      </Card>
     </div >
   )
 }
