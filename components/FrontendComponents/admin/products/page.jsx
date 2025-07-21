@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,38 +9,21 @@ import { Pencil, Trash2, Eye } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useRouter } from "next/navigation";
 
-const products = [
-  {
-    id: "1",
-    name: "Wireless Headphones",
-    price: 89.99,
-    stock: 24,
-    category: "Electronics",
-    image: "/images/headphones.jpg",
-  },
-  {
-    id: "2",
-    name: "Leather Wallet",
-    price: 45.0,
-    stock: 13,
-    category: "Accessories",
-    image: "/images/wallet.jpg",
-  },
-  {
-    id: "3",
-    name: "Running Shoes",
-    price: 120.0,
-    stock: 6,
-    category: "Footwear",
-    image: "/images/shoes.jpg",
-  },
-];
-
 export default function ProductPage() {
+  const [products, setProducts] = useState([]); // ✅ add this
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const router = useRouter();
 
+  useEffect(() => {
+    async function fetchProducts() {
+      const res = await fetch('/api/admin/products');
+      const data = await res.json();
+      console.log(data);
+      setProducts(data); // ✅ store in state
+    }
+    fetchProducts();
+  }, []);
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch = product.name.toLowerCase().includes(search.toLowerCase());
@@ -71,10 +54,9 @@ export default function ProductPage() {
             </SelectContent>
           </Select>
         </div>
-        <Button className="ml-auto" onClick={()=>{
-          router.push("/admin/products/addProduct")
-        }
-        }>+ Add Product</Button>
+        <Button className="ml-auto" onClick={() => {
+          router.push("/admin/products/addProduct");
+        }}>+ Add Product</Button>
       </div>
 
       <Card>
@@ -92,14 +74,14 @@ export default function ProductPage() {
             </TableHeader>
             <TableBody>
               {filteredProducts.map((product) => (
-                <TableRow key={product.id}>
+                <TableRow key={product._id}>
                   <TableCell>
-                    <img src={product.image} alt={product.name} className="w-12 h-12 object-cover rounded" />
+                    <img src={product.images[0]} alt={product.name} className="w-12 h-12 object-cover rounded" />
                   </TableCell>
                   <TableCell>{product.name}</TableCell>
-                  <TableCell>${product.price.toFixed(2)}</TableCell>
-                  <TableCell>{product.stock}</TableCell>
-                  <TableCell>{product.category}</TableCell>
+                  <TableCell>{product.discountedPrice}</TableCell>
+                  <TableCell>{product.quantity}</TableCell>
+                  <TableCell className="w-20 whitespace-normal break-words">{product.categories.join(", ")}</TableCell>
                   <TableCell className="text-right space-x-2">
                     <Button size="icon" variant="outline">
                       <Eye className="w-4 h-4" />
