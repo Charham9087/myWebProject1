@@ -17,15 +17,15 @@ export default function AdminProductDetailPage() {
 
   const [currentImage, setCurrentImage] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
-  const [editedProduct, setEditedProduct] = useState(null); 
+  const [editedProduct, setEditedProduct] = useState(null);
   const [categories, setCategories] = useState([""]);
   const [tags, setTags] = useState([""]);
+  const [catalogues, setCatalogues] = useState([""]);  // ✅ added catalogues state
   const [imageUrls, setImageUrls] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const { edgestore } = useEdgeStore();
 
-  // ✅ Fetch product on mount
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -39,6 +39,7 @@ export default function AdminProductDetailPage() {
         setEditedProduct(data);
         setCategories(data.categories || [""]);
         setTags(data.tags || [""]);
+        setCatalogues(data.catalogues || [""]);  // ✅ load catalogues if present
         setImageUrls(data.images || []);
       } catch (error) {
         console.error("Error fetching product:", error);
@@ -58,11 +59,12 @@ export default function AdminProductDetailPage() {
   const handleEdit = () => setIsEditing(true);
 
   const handleSave = async () => {
-    const finalData = { 
-      ...editedProduct, 
-      categories, 
-      tags, 
-      images: imageUrls 
+    const finalData = {
+      ...editedProduct,
+      categories,
+      tags,
+      catalogues,         // ✅ include catalogues
+      images: imageUrls,
     };
     console.log("Sending data to backend:", finalData);
     await updateProduct(finalData);
@@ -82,6 +84,11 @@ export default function AdminProductDetailPage() {
   const handleAddTag = () => setTags([...tags, ""]);
   const handleTagChange = (i, value) => {
     const newT = [...tags]; newT[i] = value; setTags(newT);
+  };
+
+  const handleAddCatalogue = () => setCatalogues([...catalogues, ""]);
+  const handleCatalogueChange = (i, value) => {
+    const newList = [...catalogues]; newList[i] = value; setCatalogues(newList);
   };
 
   const handleUpload = async (e) => {
@@ -128,6 +135,14 @@ export default function AdminProductDetailPage() {
               </div>
 
               <div>
+                <p className="text-sm font-semibold">Catalogues</p>
+                {catalogues.map((c, i) => (
+                  <Input key={i} value={c} onChange={(e) => handleCatalogueChange(i, e.target.value)} className="mb-1" />
+                ))}
+                <Button type="button" variant="outline" size="sm" onClick={handleAddCatalogue}>+ Add Catalogue</Button>
+              </div>
+
+              <div>
                 <p className="text-sm font-semibold">Tags</p>
                 {tags.map((tag, i) => (
                   <Input key={i} value={tag} onChange={(e) => handleTagChange(i, e.target.value)} className="mb-1 w-32" />
@@ -164,6 +179,7 @@ export default function AdminProductDetailPage() {
               <p>Quantity: {editedProduct.quantity}</p>
               <p>Payment Method: {editedProduct.paymentMethod?.toUpperCase()}</p>
               <p>Categories: {editedProduct.categories?.join(", ")}</p>
+              <p>Catalogues: {editedProduct.catalogues?.join(", ")}</p>
               <p>Tags: {editedProduct.tags?.join(", ")}</p>
               <p>{editedProduct.description}</p>
             </>

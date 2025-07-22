@@ -16,7 +16,6 @@ export default function ProductsGridPage() {
         fetchProducts();
     }, [])
 
-
     return (
         <div className="max-w-7xl mx-auto p-4">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4">🛒 Explore Our Products</h1>
@@ -46,6 +45,14 @@ export default function ProductsGridPage() {
                                     Add
                                 </Button>
                             </div>
+
+                            {/* ✅ View button neeche full width */}
+                            <Button 
+                                className="mt-2 w-full bg-gray-100 text-gray-800 hover:bg-gray-200 text-xs sm:text-sm"
+                                // onClick={() => router.push(`/products/${products._id}`)} // aise use kar sakte ho
+                            >
+                                View Details
+                            </Button>
                         </div>
                     </div>
                 ))}

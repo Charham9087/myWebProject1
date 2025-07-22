@@ -20,95 +20,40 @@ import {
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
-
-// ✅ Edge Store ka hook import
 import { useEdgeStore } from "@/components/edgestore"
 import SaveProduct from "@/server/SAVE-PRODUCT"
 
 export default function AddProductPage() {
-  const [categories, setCategories] = useState([""])
-  const [done, setdone] = useState("")
+  const [categories, setCategories] = useState(["Electronics", "Accessories", "Clothing"]);
+  const [selectedCategories, setSelectedCategories] = useState([]);
 
-  const router = useRouter()
-  const [imageUrls, setImageUrls] = useState([])
-  const [loading, setloading] = useState(false);
-  const { register, handleSubmit, setValue } = useForm()
+  const [catalogues, setCatalogues] = useState(["New Arrivals", "Summer Collection"]);
+  const [selectedCatalogues, setSelectedCatalogues] = useState([]);
 
-  // ✅ Edge Store ka hook initialize
-  const { edgestore } = useEdgeStore()
-
-  const handleAddCategory = () => {
-    setCategories([...categories, ""])
-  }
-
-  const handleCategoryChange = (index, value) => {
-    const newCategories = [...categories]
-    newCategories[index] = value
-    setCategories(newCategories)
-  }
-  // ... (rest of your code same as before)
-
-  // ADD THIS inside component, right after categories state:
   const [tags, setTags] = useState([""]);
+  const [done, setdone] = useState("");
+  const [loading, setloading] = useState(false);
 
-  const handleAddTag = () => {
-    setTags([...tags, ""]);
-  }
+  const router = useRouter();
+  const { register, handleSubmit, setValue } = useForm();
+  const { edgestore } = useEdgeStore();
 
+  const handleAddTag = () => setTags([...tags, ""]);
   const handleTagChange = (index, value) => {
     const newTags = [...tags];
     newTags[index] = value;
     setTags(newTags);
   }
 
-
-
-  // ✅ Ye function multiple files ko Edge Store pe upload karega
-  const handleUpload = async (e) => {
-    const files = e.target.files
-    if (!files) return
-
-    const uploadedUrls = []
-    console.log("RECEIVED FILES, ", files[0])
-
-    // for (let file of files) {
-    //   // har file ko Edge Store pe upload kar rahe hain
-    //   const res = await edgestore.myPublicImages.upload({ file })
-    //   console.log("Uploaded image URL:", res.url)
-    var singleFIle = files[0]; console.log(singleFIle)
-    const res = await edgestore.publicFiles.upload({
-      file: singleFIle,
-      onProgressChange: (progress) => {
-        // you can use this to show a progress bar
-        console.log(progress);
-      },
-    });
-    console.log("Uploaded image URL:", res.url)
-
-
-
-
-    //   // sirf public URL store kar rahe hain
-    //   uploadedUrls.push(res.url)
-    // }
-
-
-
-    // console.log("Uploaded image URLs:", uploadedUrls)
-    // setImageUrls(uploadedUrls)
-
-    // ✅ form data me bhi images ki value set kar rahe hain
-    setValue("images", uploadedUrls)
-  }
   async function onSubmit(data) {
     setloading(true);
     console.log("FORM DATA ", data);
 
-    data.categories = categories;
-    console.log("categories stored in form data")
+    data.categories = selectedCategories;
+    data.catalogues = selectedCatalogues;
+    data.tags = tags;
 
-    // edge store :
-
+    // upload images
     const urls = [];
     for (let file of data.files) {
       const res = await edgestore.publicFiles.upload({
@@ -116,47 +61,13 @@ export default function AddProductPage() {
         onProgressChange: (progress) => console.log("Uploading image", progress)
       });
       urls.push(res.url);
-      console.log("SAVED URL IMAGE", res.url)
     }
-
-    //  console.log("URLS ARRAY",urls)
-    data.files = []; //empty files as theyre too big!
-    data.tags = tags;
-
+    data.files = [];
     data.urls = urls;
 
-    // NOW CALL SERVER ACTION TO SAVE PRODUCT
-
     await SaveProduct(data);
-    // to be continued   
-
-    // router.push("/admin/products")
-
     setdone("done");
     setloading(false);
-
-
-    // try {
-    //   data.categories = categories         // categories bhi add kar rahe hain
-    //   data.images = imageUrls              // images URLs bhi add kar rahe hain
-    //   console.log("Form data:", data)
-
-    //   const response = await fetch('/api/admin/addProduct', {
-    //     method: 'POST',
-    //     body: JSON.stringify(data),
-    //     headers: { 'Content-Type': 'application/json' }
-    //   })
-
-    //   const res = await response.json()
-    //   console.log(res)
-
-    //   alert(res.message)
-
-    //   router.push("/admin/products")
-    // } catch (err) {
-    //   console.log(err)
-    //   alert("Something went wrong.")
-    // }
   }
 
   return (
@@ -170,76 +81,107 @@ export default function AddProductPage() {
         </div>
       )}
 
-
       <Card>
         <CardHeader>
           <CardTitle>Add Product to A Store</CardTitle>
         </CardHeader>
         <CardContent>
           <form className="grid gap-6" onSubmit={handleSubmit(onSubmit)}>
+
             <div className="grid gap-2">
-              <Label htmlFor="name">Product Name</Label>
-              <Input id="name" placeholder="Enter product name" {...register("name", { required: true })} />
+              <Label>Product Name</Label>
+              <Input placeholder="Enter product name" {...register("name", { required: true })} />
             </div>
 
             <div className="grid gap-2 md:grid-cols-2">
               <div>
-                <Label htmlFor="original-price">Original Price</Label>
-                <Input id="original-price" type="number" placeholder="Rs.1000" {...register("originalPrice", { required: true })} />
+                <Label>Original Price</Label>
+                <Input type="number" placeholder="Rs.1000" {...register("originalPrice", { required: true })} />
               </div>
               <div>
-                <Label htmlFor="discounted-price">Discounted Price</Label>
-                <Input id="discounted-price" type="number" placeholder="Rs.800" {...register("discountedPrice", { required: true })} />
+                <Label>Discounted Price</Label>
+                <Input type="number" placeholder="Rs.800" {...register("discountedPrice", { required: true })} />
               </div>
             </div>
 
+            {/* Categories multi-select */}
             <div className="grid gap-2">
               <Label>Categories</Label>
-              {categories.map((category, index) => (
-                <Input
-                  key={index}
-                  value={category}
-                  placeholder={`Category ${index + 1}`}
-                  onChange={(e) => handleCategoryChange(index, e.target.value)}
-                  required={index === 0}
-                />
-              ))}
-              <Button type="button" variant="outline" onClick={handleAddCategory} className="mt-2 w-fit">
-                + Add Category
-              </Button>
-              <p className="text-sm text-muted-foreground">Add multiple categories separately</p>
+              <div className="border rounded p-2 max-h-40 overflow-y-auto space-y-1">
+                {categories.map((cat, index) => (
+                  <label key={index} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={selectedCategories.includes(cat)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedCategories([...selectedCategories, cat]);
+                        } else {
+                          setSelectedCategories(selectedCategories.filter(c => c !== cat));
+                        }
+                      }}
+                    />
+                    <span>{cat}</span>
+                  </label>
+                ))}
+              </div>
+              <Button type="button" variant="outline" onClick={() => {
+                const newCat = prompt("Enter new category name:");
+                if (newCat) setCategories([...categories, newCat]);
+              }} className="mt-2 w-fit">+ Add Category</Button>
+            </div>
+
+            {/* Catalogues multi-select */}
+            <div className="grid gap-2">
+              <Label>Catalogues</Label>
+              <div className="border rounded p-2 max-h-40 overflow-y-auto space-y-1">
+                {catalogues.map((cat, index) => (
+                  <label key={index} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={selectedCatalogues.includes(cat)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedCatalogues([...selectedCatalogues, cat]);
+                        } else {
+                          setSelectedCatalogues(selectedCatalogues.filter(c => c !== cat));
+                        }
+                      }}
+                    />
+                    <span>{cat}</span>
+                  </label>
+                ))}
+              </div>
+              <Button type="button" variant="outline" onClick={() => {
+                const newCat = prompt("Enter new catalogue name:");
+                if (newCat) setCatalogues([...catalogues, newCat]);
+              }} className="mt-2 w-fit">+ Add Catalogue</Button>
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="title">Title</Label>
-              <Input id="title" placeholder="Enter product title" {...register("title", { required: true })} />
+              <Label>Title</Label>
+              <Input placeholder="Enter product title" {...register("title", { required: true })} />
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="images">Images</Label>
-              <Input
-                id="images"
-                type="file"
-                multiple
-                {...register("files", { required: true })}
-
-              />
+              <Label>Images</Label>
+              <Input type="file" multiple {...register("files", { required: true })} />
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="quantity">Quantity</Label>
-              <Input id="quantity" type="number" placeholder="0" {...register("quantity", { required: true })} />
+              <Label>Quantity</Label>
+              <Input type="number" placeholder="0" {...register("quantity", { required: true })} />
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea id="description" placeholder="Write a short description..." {...register("description", { required: true })} />
+              <Label>Description</Label>
+              <Textarea placeholder="Write a short description..." {...register("description", { required: true })} />
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="payment-method">Payment Method</Label>
+              <Label>Payment Method</Label>
               <Select onValueChange={(value) => setValue("paymentMethod", value)} required>
-                <SelectTrigger id="payment-method">
+                <SelectTrigger>
                   <SelectValue placeholder="Select a payment method" />
                 </SelectTrigger>
                 <SelectContent>
@@ -247,7 +189,10 @@ export default function AddProductPage() {
                   <SelectItem value="whatsapp">Contact on WhatsApp</SelectItem>
                 </SelectContent>
               </Select>
-            </div><div className="grid gap-2">
+            </div>
+
+            {/* Tags */}
+            <div className="grid gap-2">
               <Label>Tags</Label>
               <div className="flex flex-wrap gap-2">
                 {tags.map((tag, index) => (
@@ -256,25 +201,25 @@ export default function AddProductPage() {
                     value={tag}
                     placeholder={`Tag ${index + 1}`}
                     onChange={(e) => handleTagChange(index, e.target.value)}
-                    className="w-28"  // ✅ choti width rakhi hai
+                    className="w-28"
                   />
                 ))}
               </div>
               <Button type="button" variant="outline" onClick={handleAddTag} className="mt-2 w-fit">
                 + Add Tag
               </Button>
-              <p className="text-sm text-muted-foreground">Add multiple tags separately</p>
             </div>
-
 
             <Button type="submit" onClick={() => {
               if (done === 'done') {
-                router.push("/admin/products")
+                router.push("/admin/products");
               }
-            }}>Add Product</Button>
+            }}>
+              Add Product
+            </Button>
           </form>
         </CardContent>
       </Card>
-    </div >
+    </div>
   )
 }

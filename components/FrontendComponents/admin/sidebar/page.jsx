@@ -22,6 +22,8 @@ import {
   Receipt,
   TrendingUp,
   Activity,
+  Bell,
+  BellDot,
 } from "lucide-react";
 
 
@@ -59,9 +61,9 @@ const items = [
     icon: BarChart,
   },
   {
-    title: "Settings",
-    url: "#",
-    icon: Settings,
+    title: "notifications",
+    url: "/admin/notifications",
+    icon: BellDot,
   },
    {
     title: "A Store",
