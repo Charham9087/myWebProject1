@@ -33,6 +33,8 @@ export async function updateProduct(data) {
     description: data.description,
     paymentMethod: data.paymentMethod,
     categories: data.categories,
+    images: data.urls,
+    tags: data.tags,
   });
 
   console.log("PRODUCT UPDATED ✅");

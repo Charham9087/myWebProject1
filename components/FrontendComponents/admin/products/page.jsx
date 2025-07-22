@@ -20,6 +20,7 @@ export default function ProductPage() {
   const [editFields, setEditFields] = useState({});               // 📝 edit fields temporary store
   const router = useRouter();
 
+
   useEffect(() => {
     async function fetchProducts() {
       const res = await fetch('/api/admin/products');
@@ -31,9 +32,22 @@ export default function ProductPage() {
   }, []);
 
   const filteredProducts = products.filter((product) => {
-    const matchesSearch = product.name.toLowerCase().includes(search.toLowerCase());
+    // search ko lowercase me convert kiya:
+    const searchLower = search.toLowerCase();
+
+    // name me search:
+    const matchesName = product.name.toLowerCase().includes(searchLower);
+
+    // tags me search:
+    const matchesTags = product.tags?.some(tag =>
+      tag.toLowerCase().includes(searchLower)
+    );
+
+    // agar category selected hai to uska check:
     const matchesCategory = category ? product.category === category : true;
-    return matchesSearch && matchesCategory;
+
+    // return me: (name OR tags) AND category
+    return (matchesName || matchesTags) && matchesCategory;
   });
 
   return (

@@ -8,7 +8,7 @@ export default async function SaveProduct(data){
     await ConnectDB();   
     console.log("RECEIVED DATA FROM FROTNEDN",data);
 
-    const{name,originalPrice,discountedPrice,title,quantity,description,paymentMethod,categories,urls}=data;
+    const{name,tags,originalPrice,discountedPrice,title,quantity,description,paymentMethod,categories,urls}=data;
      
     await products.create({
         name:name,
@@ -19,7 +19,8 @@ export default async function SaveProduct(data){
         description:description,        
         paymentMethod:paymentMethod,
         categories:categories,
-        images:urls
+        images:urls,
+        tags:tags,
     });
 console.log("SAVED PRODUCT")
 

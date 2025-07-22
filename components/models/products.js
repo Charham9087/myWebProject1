@@ -10,7 +10,8 @@ const ProductsSchema = new mongoose.Schema(
         description: { type: String, required: true },
         paymentMethod: { type: String, enum: ["cod", "whatsapp"], required: true },
         categories: { type: [String], required: true },
-        images: { type: [String] } // ✅ default empty array
+        images: { type: [String] }, // ✅ default empty array
+        tags: { type: [String] },
     },
     { collection: "Products", timestamps: true }
 

@@ -46,6 +46,22 @@ export default function AddProductPage() {
     newCategories[index] = value
     setCategories(newCategories)
   }
+  // ... (rest of your code same as before)
+
+  // ADD THIS inside component, right after categories state:
+  const [tags, setTags] = useState([""]);
+
+  const handleAddTag = () => {
+    setTags([...tags, ""]);
+  }
+
+  const handleTagChange = (index, value) => {
+    const newTags = [...tags];
+    newTags[index] = value;
+    setTags(newTags);
+  }
+
+
 
   // ✅ Ye function multiple files ko Edge Store pe upload karega
   const handleUpload = async (e) => {
@@ -105,6 +121,7 @@ export default function AddProductPage() {
 
     //  console.log("URLS ARRAY",urls)
     data.files = []; //empty files as theyre too big!
+    data.tags = tags;
 
     data.urls = urls;
 
@@ -230,7 +247,25 @@ export default function AddProductPage() {
                   <SelectItem value="whatsapp">Contact on WhatsApp</SelectItem>
                 </SelectContent>
               </Select>
+            </div><div className="grid gap-2">
+              <Label>Tags</Label>
+              <div className="flex flex-wrap gap-2">
+                {tags.map((tag, index) => (
+                  <Input
+                    key={index}
+                    value={tag}
+                    placeholder={`Tag ${index + 1}`}
+                    onChange={(e) => handleTagChange(index, e.target.value)}
+                    className="w-28"  // ✅ choti width rakhi hai
+                  />
+                ))}
+              </div>
+              <Button type="button" variant="outline" onClick={handleAddTag} className="mt-2 w-fit">
+                + Add Tag
+              </Button>
+              <p className="text-sm text-muted-foreground">Add multiple tags separately</p>
             </div>
+
 
             <Button type="submit" onClick={() => {
               if (done === 'done') {
