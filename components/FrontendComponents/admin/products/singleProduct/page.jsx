@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Pencil, Trash2, Save } from "lucide-react";
 import { deleteProduct, updateProduct } from "server/Functionality-product-page";
 import { useEdgeStore } from "@/components/edgestore";
+import { Toast } from "radix-ui";
 
 export default function AdminProductDetailPage() {
   const router = useRouter();
@@ -69,7 +70,8 @@ export default function AdminProductDetailPage() {
     console.log("Sending data to backend:", finalData);
     await updateProduct(finalData);
     setIsEditing(false);
-    alert("Product updated!");
+    router.push("/admin/products/singleProductPage"); 
+    router.refresh();
   };
 
   const handleChange = (field, value) => {
