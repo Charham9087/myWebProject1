@@ -17,11 +17,12 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select"
-import { useState } from "react"
+import { useState,useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { useEdgeStore } from "@/components/edgestore"
 import SaveProduct from "@/server/SAVE-PRODUCT"
+import { SaveCatalogue, showCatalogue } from "@/server/catalogue-functions"
 
 export default function AddProductPage() {
   const [categories, setCategories] = useState(["Electronics", "Accessories", "Clothing"]);
@@ -45,6 +46,15 @@ export default function AddProductPage() {
     setTags(newTags);
   }
 
+
+
+  useEffect(() => {
+    async function fetchCatalogues() {
+      const names = await showCatalogue();
+      setCatalogues(names);
+    }
+    fetchCatalogues();
+  }, [])
   async function onSubmit(data) {
     setloading(true);
     console.log("FORM DATA ", data);
@@ -64,7 +74,7 @@ export default function AddProductPage() {
     }
     data.files = [];
     data.urls = urls;
-
+console.log(data)
     await SaveProduct(data);
     setdone("done");
     setloading(false);
@@ -152,9 +162,12 @@ export default function AddProductPage() {
                   </label>
                 ))}
               </div>
-              <Button type="button" variant="outline" onClick={() => {
+              <Button type="button" variant="outline" onClick={async () => {
                 const newCat = prompt("Enter new catalogue name:");
                 if (newCat) setCatalogues([...catalogues, newCat]);
+                const data = newCat;
+                await SaveCatalogue({name:data});
+
               }} className="mt-2 w-fit">+ Add Catalogue</Button>
             </div>
 

@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Pencil, Trash2, Save } from "lucide-react";
 import { deleteProduct, updateProduct } from "server/Functionality-product-page";
 import { useEdgeStore } from "@/components/edgestore";
-import { Toast } from "radix-ui";
+import { showCatalogue, SaveCatalogue } from "@/server/catalogue-functions"; // ✅ import both
 
 export default function AdminProductDetailPage() {
   const router = useRouter();
@@ -21,12 +21,13 @@ export default function AdminProductDetailPage() {
   const [editedProduct, setEditedProduct] = useState(null);
   const [categories, setCategories] = useState([""]);
   const [tags, setTags] = useState([""]);
-  const [catalogues, setCatalogues] = useState([""]);  // ✅ added catalogues state
+  const [catalogues, setCatalogues] = useState([""]); // ✅ list of all available catalogues
   const [imageUrls, setImageUrls] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const { edgestore } = useEdgeStore();
 
+  // fetch product data
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -40,7 +41,6 @@ export default function AdminProductDetailPage() {
         setEditedProduct(data);
         setCategories(data.categories || [""]);
         setTags(data.tags || [""]);
-        setCatalogues(data.catalogues || [""]);  // ✅ load catalogues if present
         setImageUrls(data.images || []);
       } catch (error) {
         console.error("Error fetching product:", error);
@@ -50,6 +50,15 @@ export default function AdminProductDetailPage() {
     };
     if (_id) fetchProduct();
   }, [_id]);
+
+  // fetch catalogue list from DB
+  useEffect(() => {
+    async function fetchCatalogues() {
+      const names = await showCatalogue();
+      setCatalogues(names);
+    }
+    fetchCatalogues();
+  }, []);
 
   const handleDelete = async () => {
     await deleteProduct(_id);
@@ -62,15 +71,12 @@ export default function AdminProductDetailPage() {
   const handleSave = async () => {
     const finalData = {
       ...editedProduct,
-      categories,
-      tags,
-      catalogues,         // ✅ include catalogues
       images: imageUrls,
     };
     console.log("Sending data to backend:", finalData);
     await updateProduct(finalData);
     setIsEditing(false);
-    router.push("/admin/products/singleProductPage"); 
+    router.push("/admin/products/singleProductPage");
     router.refresh();
   };
 
@@ -86,11 +92,6 @@ export default function AdminProductDetailPage() {
   const handleAddTag = () => setTags([...tags, ""]);
   const handleTagChange = (i, value) => {
     const newT = [...tags]; newT[i] = value; setTags(newT);
-  };
-
-  const handleAddCatalogue = () => setCatalogues([...catalogues, ""]);
-  const handleCatalogueChange = (i, value) => {
-    const newList = [...catalogues]; newList[i] = value; setCatalogues(newList);
   };
 
   const handleUpload = async (e) => {
@@ -128,6 +129,7 @@ export default function AdminProductDetailPage() {
               <Input type="number" value={editedProduct.quantity} onChange={(e) => handleChange("quantity", Number(e.target.value))} placeholder="Quantity" />
               <Input value={editedProduct.paymentMethod} onChange={(e) => handleChange("paymentMethod", e.target.value)} placeholder="Payment Method" />
 
+              {/* Categories */}
               <div>
                 <p className="text-sm font-semibold">Categories</p>
                 {categories.map((cat, i) => (
@@ -136,14 +138,51 @@ export default function AdminProductDetailPage() {
                 <Button type="button" variant="outline" size="sm" onClick={handleAddCategory}>+ Add Category</Button>
               </div>
 
-              <div>
+              {/* Catalogues multi-select */}
+              <div className="grid gap-2">
                 <p className="text-sm font-semibold">Catalogues</p>
-                {catalogues.map((c, i) => (
-                  <Input key={i} value={c} onChange={(e) => handleCatalogueChange(i, e.target.value)} className="mb-1" />
-                ))}
-                <Button type="button" variant="outline" size="sm" onClick={handleAddCatalogue}>+ Add Catalogue</Button>
+                <div className="border rounded p-2 max-h-40 overflow-y-auto space-y-1">
+                  {catalogues.map((cat, index) => (
+                    <label key={index} className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={editedProduct.catalogues?.includes(cat)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setEditedProduct(prev => ({
+                              ...prev,
+                              catalogues: [...(prev.catalogues || []), cat]
+                            }));
+                          } else {
+                            setEditedProduct(prev => ({
+                              ...prev,
+                              catalogues: prev.catalogues?.filter(c => c !== cat)
+                            }));
+                          }
+                        }}
+                      />
+                      <span>{cat}</span>
+                    </label>
+                  ))}
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    const newCat = prompt("Enter new catalogue name:");
+                    if (newCat) {
+                      setCatalogues([...catalogues, newCat]);
+                      await SaveCatalogue({ name: newCat }); // ✅ save to DB too
+                    }
+                  }}
+                >
+                  + Add Catalogue
+                </Button>
+
               </div>
 
+              {/* Tags */}
               <div>
                 <p className="text-sm font-semibold">Tags</p>
                 {tags.map((tag, i) => (
@@ -152,6 +191,7 @@ export default function AdminProductDetailPage() {
                 <Button type="button" variant="outline" size="sm" onClick={handleAddTag}>+ Add Tag</Button>
               </div>
 
+              {/* Images */}
               <div>
                 <p className="text-sm font-semibold">Images</p>
                 <Input type="file" multiple onChange={handleUpload} />

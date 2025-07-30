@@ -9,17 +9,15 @@ import { Pencil, Trash2, Eye } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useRouter } from "next/navigation";
 import { deleteProduct } from "@/server/Functionality-product-page"
-// import updateProduct agar tumhare paas hai, warna bana lo:
 import { updateProduct } from "@/server/Functionality-product-page"
 
 export default function ProductPage() {
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
-  const [editingProductId, setEditingProductId] = useState(null); // 📝 kon sa product edit ho raha hai
-  const [editFields, setEditFields] = useState({});               // 📝 edit fields temporary store
+  const [editingProductId, setEditingProductId] = useState(null);
+  const [editFields, setEditFields] = useState({});
   const router = useRouter();
-
 
   useEffect(() => {
     async function fetchProducts() {
@@ -32,21 +30,12 @@ export default function ProductPage() {
   }, []);
 
   const filteredProducts = products.filter((product) => {
-    // search ko lowercase me convert kiya:
     const searchLower = search.toLowerCase();
-
-    // name me search:
     const matchesName = product.name.toLowerCase().includes(searchLower);
-
-    // tags me search:
     const matchesTags = product.tags?.some(tag =>
       tag.toLowerCase().includes(searchLower)
     );
-
-    // agar category selected hai to uska check:
     const matchesCategory = category ? product.category === category : true;
-
-    // return me: (name OR tags) AND category
     return (matchesName || matchesTags) && matchesCategory;
   });
 
@@ -86,8 +75,9 @@ export default function ProductPage() {
                 <TableHead>Image</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Price</TableHead>
-                <TableHead>Stock</TableHead>
+                {/* <TableHead>Stock</TableHead> */}
                 <TableHead>Category</TableHead>
+                <TableHead>Catalogue</TableHead> {/* ✅ new column */}
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -98,7 +88,6 @@ export default function ProductPage() {
                     <img src={product.images[0]} alt={product.name} className="w-12 h-12 object-cover rounded" />
                   </TableCell>
 
-                  {/* ✅ agar edit mode hai toh input fields dikhao, warna text */}
                   {editingProductId === product._id ? (
                     <>
                       <TableCell>
@@ -126,28 +115,32 @@ export default function ProductPage() {
                           value={editFields.categories}
                           onChange={(e) => setEditFields({ ...editFields, categories: e.target.value })}
                         />
-                        {/* yahan comma separated likhe user */}
+                      </TableCell>
+                      <TableCell className="w-20 whitespace-normal break-words">
+                        <Input
+                          value={editFields.catalogues}
+                          onChange={(e) => setEditFields({ ...editFields, catalogues: e.target.value })}
+                        />
                       </TableCell>
                     </>
                   ) : (
                     <>
                       <TableCell>{product.name}</TableCell>
                       <TableCell>{product.discountedPrice}</TableCell>
-                      <TableCell>{product.quantity}</TableCell>
+                     
                       <TableCell className="w-20 whitespace-normal break-words">{product.categories.join(", ")}</TableCell>
+                      <TableCell className="w-20 whitespace-normal break-words">{product.catalogues?.join(", ")}</TableCell>
                     </>
                   )}
 
                   <TableCell className="text-right space-x-2">
                     <Button size="icon" variant="outline" onClick={() => {
                       router.push(`/admin/products/singleProductPage?id=${product._id}`)
-
                     }}>
                       <Eye className="w-4 h-4" />
                     </Button>
 
                     {editingProductId === product._id ? (
-                      // ✅ edit mode me Save button dikhao
                       <Button
                         size="icon"
                         variant="outline"
@@ -157,16 +150,16 @@ export default function ProductPage() {
                             name: editFields.name,
                             discountedPrice: editFields.discountedPrice,
                             quantity: editFields.quantity,
-                            categories: editFields.categories.split(",").map(c => c.trim())
+                            categories: editFields.categories.split(",").map(c => c.trim()),
+                            catalogues: editFields.catalogues.split(",").map(c => c.trim())
                           });
-                          setEditingProductId(null); // exit edit mode
-                          window.location.reload();  // refresh
+                          setEditingProductId(null);
+                          window.location.reload();
                         }}
                       >
                         ✔️
                       </Button>
                     ) : (
-                      // ✅ normal mode me edit button
                       <Button
                         size="icon"
                         variant="outline"
@@ -176,10 +169,10 @@ export default function ProductPage() {
                             name: product.name,
                             discountedPrice: product.discountedPrice,
                             quantity: product.quantity,
-                            categories: product.categories.join(", ")
+                            categories: product.categories.join(", "),
+                            catalogues: product.catalogues?.join(", ")
                           });
                           console.log("Editing product with ID:", product._id);
-
                         }}
                       >
                         <Pencil className="w-4 h-4" />

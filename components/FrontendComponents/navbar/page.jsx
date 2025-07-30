@@ -42,7 +42,8 @@ export default function Navbar() {
           <Link href="/">Home</Link>
           <Link href="/about">About</Link>
           <Link href="/contact">Contact</Link>
-          <Link href="/catalogs">Catalogs</Link>
+          <Link href="/catalogue">Catalogues</Link>
+
           <Link href="/admin">Admin</Link>   {/* <-- yahan add kiya Admin Panel */}
           <Link href="/login">Login</Link>
           <Link href="/signup">Signup</Link>
@@ -61,7 +62,7 @@ export default function Navbar() {
           <Link href="/admin" className="py-2 border-b border-gray-800">Admin</Link> {/* <-- yahan bhi add kiya Admin Panel*/}
           <Link href="/about" className="py-2 border-b border-gray-800">About</Link>
           <Link href="/contact" className="py-2 border-b border-gray-800">Contact</Link>
-          <Link href="/catalogs" className="py-2 border-b border-gray-800">Catalogs</Link>
+          <Link href="/catalogue" className="py-2 border-b border-gray-800">Catalogues</Link>
           <Link href="/login" className="py-2 border-b border-gray-800">Login</Link>
           <Link href="/signup" className="py-2">Signup</Link>
         </div>
