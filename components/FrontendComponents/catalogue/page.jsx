@@ -3,9 +3,9 @@
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
-import { GetCatalogueWithProducts } from "@/server/catalogue-functions";
 
-export default function ProductsGridPage() {
+
+export default function ProductsGridPage({ GetCatalogueWithProducts }) {
   const [catalogueData, setCatalogueData] = useState([]); // grouped catalogue data
   const [cartItems, setCartItems] = useState([]);
 

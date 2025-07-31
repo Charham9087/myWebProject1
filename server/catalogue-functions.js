@@ -1,30 +1,38 @@
 "use server"
 
 import ConnectDB from "@/components/mognoConnect";
-import products from "@/components/models/products";
+import Products from "@/components/models/products";
 import catalogue from "@/components/models/catalogue";
-
 export async function GetCatalogueWithProducts() {
     await ConnectDB();
     console.log("Connected to DB Successfully");
 
     // Get all catalogues
     const catalogues = await catalogue.find();
-    console.log("catalogues", catalogues);
 
     // For each catalogue, find matching products
     const catalogueWithProducts = await Promise.all(
         catalogues.map(async (cat) => {
-            const matchedProducts = await products.find({ catalogues: cat.name });
+            const matchedProducts = await Products.find({ catalogues: cat.name });
+            console.log("matchedProducts full object from DB\n", matchedProducts);
+
+            // Convert each product's _id to string
+            const productsWithStringId = matchedProducts.map(product => ({
+                ...product.toObject(),
+                _id: product._id.toString()
+            }));
+
             return {
                 name: cat.name,
-                products: matchedProducts
+                products: productsWithStringId
             };
         })
     );
+    console.log("catalogueWithProducts\n", catalogueWithProducts);
 
     return catalogueWithProducts;
 }
+
 
 
 
