@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,8 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Pencil, Trash2, Eye } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useRouter } from "next/navigation";
-import { deleteProduct } from "@/server/Functionality-product-page"
-import { updateProduct } from "@/server/Functionality-product-page"
+import { deleteProduct, updateProduct } from "@/server/Functionality-product-page";
 
 export default function ProductPage() {
   const [products, setProducts] = useState([]);
@@ -32,9 +31,7 @@ export default function ProductPage() {
   const filteredProducts = products.filter((product) => {
     const searchLower = search.toLowerCase();
     const matchesName = product.name.toLowerCase().includes(searchLower);
-    const matchesTags = product.tags?.some(tag =>
-      tag.toLowerCase().includes(searchLower)
-    );
+    const matchesTags = product.tags?.some(tag => tag.toLowerCase().includes(searchLower));
     const matchesCategory = category ? product.category === category : true;
     return (matchesName || matchesTags) && matchesCategory;
   });
@@ -62,9 +59,9 @@ export default function ProductPage() {
             </SelectContent>
           </Select>
         </div>
-        <Button className="ml-auto" onClick={() => {
-          router.push("/admin/products/addProduct");
-        }}>+ Add Product</Button>
+        <Button className="ml-auto" onClick={() => router.push("/admin/products/addProduct")}>
+          + Add Product
+        </Button>
       </div>
 
       <Card>
@@ -75,9 +72,8 @@ export default function ProductPage() {
                 <TableHead>Image</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Price</TableHead>
-                {/* <TableHead>Stock</TableHead> */}
                 <TableHead>Category</TableHead>
-                <TableHead>Catalogue</TableHead> {/* ✅ new column */}
+                <TableHead>Catalogue</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -89,7 +85,7 @@ export default function ProductPage() {
                   </TableCell>
 
                   {editingProductId === product._id ? (
-                    <>
+                    <React.Fragment>
                       <TableCell>
                         <Input
                           value={editFields.name}
@@ -105,38 +101,30 @@ export default function ProductPage() {
                       </TableCell>
                       <TableCell>
                         <Input
-                          type="number"
-                          value={editFields.quantity}
-                          onChange={(e) => setEditFields({ ...editFields, quantity: e.target.value })}
-                        />
-                      </TableCell>
-                      <TableCell className="w-20 whitespace-normal break-words">
-                        <Input
                           value={editFields.categories}
                           onChange={(e) => setEditFields({ ...editFields, categories: e.target.value })}
                         />
                       </TableCell>
-                      <TableCell className="w-20 whitespace-normal break-words">
+                      <TableCell>
                         <Input
                           value={editFields.catalogues}
                           onChange={(e) => setEditFields({ ...editFields, catalogues: e.target.value })}
                         />
                       </TableCell>
-                    </>
+                    </React.Fragment>
                   ) : (
-                    <>
+                    <React.Fragment>
                       <TableCell>{product.name}</TableCell>
                       <TableCell>{product.discountedPrice}</TableCell>
-                     
                       <TableCell className="w-20 whitespace-normal break-words">{product.categories.join(", ")}</TableCell>
                       <TableCell className="w-20 whitespace-normal break-words">{product.catalogues?.join(", ")}</TableCell>
-                    </>
+                    </React.Fragment>
                   )}
 
                   <TableCell className="text-right space-x-2">
-                    <Button size="icon" variant="outline" onClick={() => {
+                    <Button size="icon" variant="outline" onClick={() =>
                       router.push(`/admin/products/singleProductPage?id=${product._id}`)
-                    }}>
+                    }>
                       <Eye className="w-4 h-4" />
                     </Button>
 
@@ -149,7 +137,6 @@ export default function ProductPage() {
                             _id: product._id,
                             name: editFields.name,
                             discountedPrice: editFields.discountedPrice,
-                            quantity: editFields.quantity,
                             categories: editFields.categories.split(",").map(c => c.trim()),
                             catalogues: editFields.catalogues.split(",").map(c => c.trim())
                           });
@@ -168,11 +155,9 @@ export default function ProductPage() {
                           setEditFields({
                             name: product.name,
                             discountedPrice: product.discountedPrice,
-                            quantity: product.quantity,
                             categories: product.categories.join(", "),
                             catalogues: product.catalogues?.join(", ")
                           });
-                          console.log("Editing product with ID:", product._id);
                         }}
                       >
                         <Pencil className="w-4 h-4" />

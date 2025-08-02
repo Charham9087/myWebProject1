@@ -3,10 +3,13 @@
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
 
 export default function ProductsGridPage() {
     const [products, setProducts] = useState([]);
     const [cartItems, setcartItems] = useState([]);
+    const router = useRouter();
 
     // Load existing cart from localStorage on mount
     useEffect(() => {
@@ -24,6 +27,11 @@ export default function ProductsGridPage() {
         }
         fetchProducts();
     }, []);
+
+    const handleViewDetails = (_id) => {
+        router.push(`/viewDetails?_id=${_id}`)
+
+    }
 
     // Add to cart handler
     const handleAddToCart = (product) => {
@@ -71,7 +79,8 @@ export default function ProductsGridPage() {
                 {products.map((product) => (
                     <div
                         key={product._id}
-                        className="bg-white rounded-xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-transform duration-200 overflow-hidden flex flex-col"
+                        onClick={() => handleViewDetails(product._id)}
+                        className="bg-white rounded-xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-transform duration-200 overflow-hidden flex flex-col cursor-pointer"
                     >
                         <img
                             src={product.images?.[0] || "https://via.placeholder.com/300x200"}
@@ -85,12 +94,15 @@ export default function ProductsGridPage() {
                             <p className="text-gray-500 text-xs sm:text-sm line-clamp-2 flex-grow">{product.title}</p>
 
                             <div className="flex gap-2 mt-2">
-                                <Button className="flex-1 bg-blue-600 text-white hover:bg-blue-700 text-xs sm:text-sm">
+                                <Button
+                                    className="flex-1 bg-blue-600 text-white hover:bg-blue-700 text-xs sm:text-sm"
+                                    onClick={(e) => { e.stopPropagation(); /* your Buy action */ }}
+                                >
                                     Buy
                                 </Button>
                                 <Button
                                     className="flex-1 bg-gray-200 text-gray-800 hover:bg-gray-300 text-xs sm:text-sm"
-                                    onClick={() => handleAddToCart(product)}
+                                    onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
                                 >
                                     Add To Cart
                                 </Button>
@@ -98,11 +110,13 @@ export default function ProductsGridPage() {
 
                             <Button
                                 className="mt-2 w-full bg-gray-100 text-gray-800 hover:bg-gray-200 text-xs sm:text-sm"
+                                onClick={(e) => { e.stopPropagation(); handleViewDetails(product._id); }}
                             >
                                 View Details
                             </Button>
                         </div>
                     </div>
+
                 ))}
             </div>
         </div>

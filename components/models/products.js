@@ -11,11 +11,11 @@ const ProductsSchema = new mongoose.Schema(
         paymentMethod: { type: String, enum: ["cod", "whatsapp"], required: true },
         categories: { type: [String], required: true },
         images: { type: [String] },
+        variantsImages: { type: [String] }, // ✅ fixed spelling here
         tags: { type: [String] },
-        catalogues: { type: [String] },  // ✅ plural name
+        catalogues: { type: [String] },
     },
     { collection: "Products", timestamps: true }
-
 );
 
 // Prevent model overwrite issue in Next.js hot reload
