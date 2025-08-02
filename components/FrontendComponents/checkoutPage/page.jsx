@@ -17,7 +17,7 @@ export default function CheckoutPage() {
   const [orderID, setOrderID] = useState("");
   const router = useRouter();
   const searchParams = useSearchParams();
-  const _id = searchParams.get("_id") || "";
+  const _id = searchParams.get("_id");
   const [form, setForm] = useState({
     name: "",
     address: "",
@@ -34,7 +34,7 @@ export default function CheckoutPage() {
 
 
   useEffect(() => {
-    // get quantity from localStorage by matching ids
+        if (!_id) return; // ✅ Defensive check// get quantity from localStorage by matching ids
     const cart = localStorage.getItem("cartItems");
     if (cart) {
       const parsedCart = JSON.parse(cart);
@@ -103,6 +103,7 @@ export default function CheckoutPage() {
     console.log(form)
     saveCheckout(form)
     toast(`Order placed successfully! Soon you will receive an Email!`);
+    router.push("/");
   };
 
 
@@ -158,7 +159,7 @@ export default function CheckoutPage() {
             </Select>
             <p className="text-red-500 mt-2 text-sm">
               If you want to pay online via Jazzcash, Easypaisa, or Bank, contact us on WhatsApp:{" "}
-              <a href="https://wa.me/92304462277" className="underline">+9230-4462277</a>
+              <a href="https://wa.me/923304462277" className="underline">+9230-4462277</a>
             </p>
           </CardContent>
         </Card>
@@ -194,7 +195,7 @@ export default function CheckoutPage() {
               <p className="text-red-500 text-sm">
                 An error occurred... <br />
                 Please contact on WhatsApp:{" "}
-                <a href="https://wa.me/92304462277" className="underline">+9230-4462277</a>
+                <a href="https://wa.me/923304462277" className="underline">+9230-4462277</a>
               </p>
             )}
             <hr className="my-2" />

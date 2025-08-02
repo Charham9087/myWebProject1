@@ -96,7 +96,9 @@ export default function ProductsGridPage() {
                             <div className="flex gap-2 mt-2">
                                 <Button
                                     className="flex-1 bg-blue-600 text-white hover:bg-blue-700 text-xs sm:text-sm"
-                                    onClick={(e) => { e.stopPropagation(); /* your Buy action */ }}
+                                    onClick={(e) => { e.stopPropagation(); /* your Buy action */ 
+                                        router.push(`/checkoutPage?_id=${product._id}`)
+                                    }}
                                 >
                                     Buy
                                 </Button>

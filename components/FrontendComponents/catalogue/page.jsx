@@ -3,11 +3,15 @@
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
 
 
 export default function ProductsGridPage({ GetCatalogueWithProducts }) {
   const [catalogueData, setCatalogueData] = useState([]); // grouped catalogue data
   const [cartItems, setCartItems] = useState([]);
+  const router = useRouter();
+
 
   // Load cart from localStorage
   useEffect(() => {
@@ -97,7 +101,9 @@ export default function ProductsGridPage({ GetCatalogueWithProducts }) {
                   </p>
 
                   <div className="flex gap-2 mt-2">
-                    <Button className="flex-1 bg-blue-600 text-white hover:bg-blue-700 text-xs sm:text-sm">
+                    <Button
+                    onClick={() => router.push(`/checkoutPage?_id=${product._id}`)}
+                     className="flex-1 bg-blue-600 text-white hover:bg-blue-700 text-xs sm:text-sm">
                       Buy Now
                     </Button>
                     <Button
