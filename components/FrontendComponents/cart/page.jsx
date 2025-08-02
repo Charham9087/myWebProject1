@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { Trash2 } from "lucide-react";
-import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
 export default function SimpleCart() {
   const router = useRouter();
   const [cartItems, setCartItems] = useState([]);
-  const [selectedIds, setSelectedIds] = useState([]);  // ✅ new state
+  const [selectedIds, setSelectedIds] = useState([]); // selected product IDs
 
   // Load cart items from localStorage on mount & keep synced
   useEffect(() => {
@@ -20,6 +19,7 @@ export default function SimpleCart() {
     };
     window.addEventListener("storage", syncCart);
     const interval = setInterval(syncCart, 1000);
+    syncCart(); // initial load
     return () => {
       window.removeEventListener("storage", syncCart);
       clearInterval(interval);
@@ -35,31 +35,56 @@ export default function SimpleCart() {
 
   // Remove an item by id
   const removeItem = (id) => {
-    const updatedCart = cartItems.filter((item) => item.id !== id);
-    setCartItems(updatedCart);
-    localStorage.setItem("cartItems", JSON.stringify(updatedCart));
+    setCartItems((prevItems) => {
+      const updatedCart = prevItems.filter((item) => item.id !== id);
+      localStorage.setItem("cartItems", JSON.stringify(updatedCart));
+      return updatedCart;
+    });
     // Also remove from selectedIds
     setSelectedIds((prev) => prev.filter((itemId) => itemId !== id));
   };
 
   // Increase quantity
   const increaseQty = (id) => {
-    const updatedCart = cartItems.map((item) =>
-      item.id === id ? { ...item, quantity: item.quantity + 1 } : item
-    );
-    setCartItems(updatedCart);
-    localStorage.setItem("cartItems", JSON.stringify(updatedCart));
+    setCartItems((prevItems) => {
+      const updatedCart = prevItems.map((item) =>
+        item.id === id ? { ...item, quantity: item.quantity + 1 } : item
+      );
+      localStorage.setItem("cartItems", JSON.stringify(updatedCart));
+      return updatedCart;
+    });
   };
 
   // Decrease quantity (minimum 1)
   const decreaseQty = (id) => {
-    const updatedCart = cartItems.map((item) =>
-      item.id === id && item.quantity > 1
-        ? { ...item, quantity: item.quantity - 1 }
-        : item
+    setCartItems((prevItems) => {
+      const updatedCart = prevItems.map((item) =>
+        item.id === id && item.quantity > 1
+          ? { ...item, quantity: item.quantity - 1 }
+          : item
+      );
+      localStorage.setItem("cartItems", JSON.stringify(updatedCart));
+      return updatedCart;
+    });
+  };
+
+  // Checkout: push to checkout page with selectedIds & their quantities
+  const handleCheckout = () => {
+    if (selectedIds.length === 0) {
+      alert("Please select at least one item to checkout!");
+      return;
+    }
+
+    // Collect selected items & their quantities
+    const selectedItems = cartItems.filter((item) =>
+      selectedIds.includes(item.id)
     );
-    setCartItems(updatedCart);
-    localStorage.setItem("cartItems", JSON.stringify(updatedCart));
+
+    // Build query: _id=1,2,3&quantity=2,1,4
+    const idsParam = selectedItems.map((item) => item.id).join(",");
+    const qtyParam = selectedItems.map((item) => item.quantity).join(",");
+
+    router.push(`/checkoutPage?_id=${idsParam}&quantity=${qtyParam}`);
   };
 
   return (
@@ -137,13 +162,7 @@ export default function SimpleCart() {
               </p>
             </div>
             <button
-              onClick={() => {
-                if (selectedIds.length === 0) {
-                  alert("Please select at least one item to checkout!");
-                  return;
-                }
-                router.push(`/checkoutPage?ids=${selectedIds.join(",")}`);
-              }}
+              onClick={handleCheckout}
               className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600"
             >
               Checkout ({selectedIds.length} selected)
