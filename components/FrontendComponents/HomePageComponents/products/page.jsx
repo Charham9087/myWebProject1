@@ -4,13 +4,16 @@ import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 
 export default function ProductsGridPage() {
     const [products, setProducts] = useState([]);
     const [cartItems, setcartItems] = useState([]);
     const router = useRouter();
-
+    const {data:session} = useSession();
+    console.log("SESSION INFO:",session)
+    
     // Load existing cart from localStorage on mount
     useEffect(() => {
         const existingCart = JSON.parse(localStorage.getItem('cartItems')) || [];
