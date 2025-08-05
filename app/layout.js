@@ -23,6 +23,7 @@ export default function RootLayout({ children }) {
           <EdgeStoreProvider>
             <NEXT_AUTH_PROVIDER>
             <LayoutWrapper>
+              
               {children}
               <Toaster position="top-center" reverseOrder={false} />
             </LayoutWrapper>

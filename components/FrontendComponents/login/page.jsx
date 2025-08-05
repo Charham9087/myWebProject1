@@ -23,6 +23,9 @@ export default function LoginPage() {
 
             const res = await signIn("google");
             console.log("Sign in response:", res);
+            if(res.ok){
+            router.push("/");
+            }
             router.push("/");
           }}
 

@@ -14,7 +14,11 @@ const UserSchema = new mongoose.Schema({
   image: {
     type: String,
   },
-  // Agar tum extra fields bhi save karna chaho to:
+  isadmin:{
+    type:Boolean,
+    default:false
+  }
+
   // createdAt automatic timestamp
 }, { timestamps: true });
 
