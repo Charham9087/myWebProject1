@@ -1,6 +1,6 @@
 // app/api/products/route.js
 import ProductsSchema from "@/components/models/products";
-import ConnectDB from "@/components/mognoConnect";
+import ConnectDB from "@/components/mongoConnect";
 
 export async function GET() {
   try {

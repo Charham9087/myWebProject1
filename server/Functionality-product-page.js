@@ -1,6 +1,6 @@
 "use server"
 
-import ConnectDB from "@/components/mognoConnect";
+import ConnectDB from "@/components/mongoConnect";
 import mongoose from "mongoose";
 import products from "@/components/models/products";
 

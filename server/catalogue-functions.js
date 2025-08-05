@@ -1,6 +1,6 @@
 "use server"
 
-import ConnectDB from "@/components/mognoConnect";
+import ConnectDB from "@/components/mongoConnect";
 import Products from "@/components/models/products";
 import catalogue from "@/components/models/catalogue";
 export async function GetCatalogueWithProducts() {

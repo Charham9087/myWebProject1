@@ -1,4 +1,4 @@
-import ConnectDB from "@/components/mognoConnect";
+import ConnectDB from "@/components/mongoConnect";
 import Products from "@/components/models/products";
 
 export async function POST(req) {

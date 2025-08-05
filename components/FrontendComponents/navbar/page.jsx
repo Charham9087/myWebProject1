@@ -1,20 +1,19 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { FaShoppingCart, FaBars, FaTimes } from "react-icons/fa";
+import { FaShoppingCart, FaBars, FaTimes, FaUser } from "react-icons/fa";
+import { useSession } from "next-auth/react";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { data: session, status } = useSession(); // <-- get user session
 
   // Close menu on scroll
   useEffect(() => {
     const handleScroll = () => {
-      if (menuOpen) {
-        setMenuOpen(false);
-      }
+      if (menuOpen) setMenuOpen(false);
     };
     window.addEventListener("scroll", handleScroll);
-
     return () => window.removeEventListener("scroll", handleScroll);
   }, [menuOpen]);
 
@@ -34,8 +33,6 @@ export default function Navbar() {
           {menuOpen ? <FaTimes /> : <FaBars />}
         </button>
 
-
-
         {/* Desktop menu */}
         <div className="hidden md:flex items-center gap-4">
           <Link href="/cart"><FaShoppingCart /></Link>
@@ -43,10 +40,17 @@ export default function Navbar() {
           <Link href="/about">About</Link>
           <Link href="/contact">Contact</Link>
           <Link href="/catalogue">Catalogues</Link>
+          <Link href="/admin">Admin</Link>
 
-          <Link href="/admin">Admin</Link>   {/* <-- yahan add kiya Admin Panel */}
-          <Link href="/login">Login</Link>
-          <Link href="/signup">Signup</Link>
+          {status === "authenticated" ? (
+            <Link href="/account" className="flex items-center gap-1">
+              <FaUser /> Account
+            </Link>
+          ) : (
+            <>
+              <Link href="/login">Login</Link>
+            </>
+          )}
         </div>
 
         {/* Mobile menu */}
@@ -59,15 +63,22 @@ export default function Navbar() {
             <FaShoppingCart /> Cart
           </Link>
           <Link href="/" className="py-2 border-b border-gray-800">Home</Link>
-          <Link href="/admin" className="py-2 border-b border-gray-800">Admin</Link> {/* <-- yahan bhi add kiya Admin Panel*/}
+          <Link href="/admin" className="py-2 border-b border-gray-800">Admin</Link>
           <Link href="/about" className="py-2 border-b border-gray-800">About</Link>
           <Link href="/contact" className="py-2 border-b border-gray-800">Contact</Link>
           <Link href="/catalogue" className="py-2 border-b border-gray-800">Catalogues</Link>
-          <Link href="/login" className="py-2 border-b border-gray-800">Login</Link>
-          <Link href="/signup" className="py-2">Signup</Link>
-        </div>
-          </div>
 
+          {status === "authenticated" ? (
+            <Link href="/account" className="flex items-center gap-2 py-2 border-b border-gray-800">
+              <FaUser /> Account
+            </Link>
+          ) : (
+            <>
+              <Link href="/login" className="py-2 border-b border-gray-800">Login</Link>
+            </>
+          )}
+        </div>
+      </div>
     </nav>
   );
 }

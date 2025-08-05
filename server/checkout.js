@@ -1,5 +1,5 @@
 "use server"
-import ConnectDB from "@/components/mognoConnect";
+import ConnectDB from "@/components/mongoConnect";
 import orders from "@/components/models/orders";
 import Products from "@/components/models/products";
 
@@ -10,7 +10,7 @@ export async function saveCheckout(data) {
     await ConnectDB();
     console.log('connected to DB successfully')
 
-    const { name, email, phone, address, city, postal, comments, productID, orderID } = data;
+    const {  name, email, phone, address, city, postal, comments, productID, orderID,total  } = data;
 
     await orders.create({
         name: name,
@@ -21,8 +21,8 @@ export async function saveCheckout(data) {
         postal: postal,
         comments: comments,
         productID: productID,
-        orderID: orderID
-
+        orderID: orderID,
+        total: total,
     })
     console.log("data saved to DB successfully")
 

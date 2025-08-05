@@ -1,5 +1,5 @@
 'use server'
-import ConnectDB from "@/components/mognoConnect";
+import ConnectDB from "@/components/mongoConnect";
 import products from "@/components/models/products";
 
 export default async function ViewProduct({ _id }) {
