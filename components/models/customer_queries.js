@@ -1,4 +1,3 @@
-// /models/customerQuery.js
 import mongoose from "mongoose";
 
 const CustomerQueriesSchema = new mongoose.Schema({
@@ -23,6 +22,10 @@ const CustomerQueriesSchema = new mongoose.Schema({
     required: true,
     maxlength: 1000,
   },
+  isRead: {
+    type: Boolean,
+    default: false, // 🔘 default is unread
+  },
   createdAt: {
     type: Date,
     default: Date.now,
@@ -30,6 +33,8 @@ const CustomerQueriesSchema = new mongoose.Schema({
 });
 
 // Avoid redefining the model during hot reload
-const CustomerQuery = mongoose.models.CustomerQuery || mongoose.model("CustomerQuery", CustomerQueriesSchema);
+const CustomerQuery =
+  mongoose.models.CustomerQuery ||
+  mongoose.model("CustomerQuery", CustomerQueriesSchema);
 
 export default CustomerQuery;

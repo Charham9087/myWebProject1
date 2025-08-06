@@ -27,3 +27,13 @@ export async function ShowOrderPageData() {
         return [];
     }
 }
+
+
+
+export async function deleteOrder(id) {
+    await ConnectDB();
+    const deleted = await Orders.findByIdAndDelete(id);
+    return deleted ? true : false;
+
+
+}

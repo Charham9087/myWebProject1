@@ -52,13 +52,8 @@ const items = [
   },
   {
     title: "Orders",
-    url: "#",
+    url: "/admin/orders",
     icon: Truck,
-  },
-  {
-    title: "analytics",
-    url: "#",
-    icon: BarChart,
   },
   {
     title: "notifications",
