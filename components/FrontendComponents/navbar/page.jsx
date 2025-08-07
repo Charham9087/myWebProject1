@@ -49,7 +49,7 @@ export default function Navbar() {
           <Link href="/about">About</Link>
           <Link href="/contact">Contact</Link>
           <Link href="/catalogue">Catalogues</Link>
-          <Link href="/admin">Admin</Link>
+       
 
           {status === "authenticated" ? (
             <>
@@ -101,7 +101,7 @@ export default function Navbar() {
             <FaShoppingCart /> Cart
           </Link>
           <Link href="/" className="py-2 border-b border-gray-800">Home</Link>
-          <Link href="/admin" className="py-2 border-b border-gray-800">Admin</Link>
+      
           <Link href="/about" className="py-2 border-b border-gray-800">About</Link>
           <Link href="/contact" className="py-2 border-b border-gray-800">Contact</Link>
           <Link href="/catalogue" className="py-2 border-b border-gray-800">Catalogues</Link>
