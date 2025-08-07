@@ -12,6 +12,9 @@ export async function saveCheckout(data) {
 
     const {  name, email, phone, address, city, postal, comments, productID, orderID,total  } = data;
 
+    const _id = productID.split(",")
+    
+
     await orders.create({
         name: name,
         email: email,
@@ -20,7 +23,7 @@ export async function saveCheckout(data) {
         city: city,
         postal: postal,
         comments: comments,
-        productID: productID,
+        productID: _id,
         orderID: orderID,
         total: total,
     })

@@ -17,21 +17,7 @@ export default function LoginPage() {
           Sign in to continue
         </p>
         <Button
-
-          onClick={async () => {
-            console.log("Sign in clicked");
-
-            const res = await signIn("google");
-            console.log("Sign in response:", res);
-            if(res.ok){
-            router.push("/");
-            }
-            router.push("/");
-          }}
-
-          variant="outline"
-          className="w-full border border-gray-300 dark:border-gray-700 flex items-center justify-center gap-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-        >
+        onClick={()=>signIn('google',{callbackUrl:"/"})}>
           <FcGoogle size={20} />
           Sign in with Google
         </Button>

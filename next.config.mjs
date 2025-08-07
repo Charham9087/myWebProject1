@@ -2,6 +2,7 @@
 const nextConfig = {
   images: {
     domains: ['via.placeholder.com'],
+    domains: ['files.edgestore.dev'],
   },
 };
 

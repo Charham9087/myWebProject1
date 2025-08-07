@@ -14,11 +14,12 @@ const UserSchema = new mongoose.Schema({
   image: {
     type: String,
   },
-  isadmin:{
-    type:Boolean,
-    default:false
+  role:{
+    type:String,
+    enum: ["user","admin"],
+    required:true,
+    default:"user"
   }
-
   // createdAt automatic timestamp
 }, { timestamps: true });
 
