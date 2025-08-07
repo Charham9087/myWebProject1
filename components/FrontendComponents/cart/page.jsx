@@ -7,15 +7,12 @@ import { useRouter } from "next/navigation";
 export default function SimpleCart() {
   const router = useRouter();
   const [cartItems, setCartItems] = useState([]);
-  const [selectedIds, setSelectedIds] = useState([]); // selected product IDs
+  const [selectedIds, setSelectedIds] = useState([]);
 
-  // Load cart items from localStorage on mount & keep synced
   useEffect(() => {
     const syncCart = () => {
       const cart = localStorage.getItem("cartItems");
-      if (cart) {
-        setCartItems(JSON.parse(cart));
-      }
+      if (cart) setCartItems(JSON.parse(cart));
     };
     window.addEventListener("storage", syncCart);
     const interval = setInterval(syncCart, 1000);
@@ -26,25 +23,21 @@ export default function SimpleCart() {
     };
   }, []);
 
-  // Toggle checkbox selection
   const toggleSelect = (id) => {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((itemId) => itemId !== id) : [...prev, id]
     );
   };
 
-  // Remove an item by id
   const removeItem = (id) => {
     setCartItems((prevItems) => {
       const updatedCart = prevItems.filter((item) => item.id !== id);
       localStorage.setItem("cartItems", JSON.stringify(updatedCart));
       return updatedCart;
     });
-    // Also remove from selectedIds
     setSelectedIds((prev) => prev.filter((itemId) => itemId !== id));
   };
 
-  // Increase quantity
   const increaseQty = (id) => {
     setCartItems((prevItems) => {
       const updatedCart = prevItems.map((item) =>
@@ -55,7 +48,6 @@ export default function SimpleCart() {
     });
   };
 
-  // Decrease quantity (minimum 1)
   const decreaseQty = (id) => {
     setCartItems((prevItems) => {
       const updatedCart = prevItems.map((item) =>
@@ -68,19 +60,16 @@ export default function SimpleCart() {
     });
   };
 
-  // Checkout: push to checkout page with selectedIds & their quantities
   const handleCheckout = () => {
     if (selectedIds.length === 0) {
       alert("Please select at least one item to checkout!");
       return;
     }
 
-    // Collect selected items & their quantities
     const selectedItems = cartItems.filter((item) =>
       selectedIds.includes(item.id)
     );
 
-    // Build query: _id=1,2,3&quantity=2,1,4
     const idsParam = selectedItems.map((item) => item.id).join(",");
     const qtyParam = selectedItems.map((item) => item.quantity).join(",");
 
@@ -100,11 +89,13 @@ export default function SimpleCart() {
           {cartItems.map((item) => (
             <div
               key={item.id}
-              className="border rounded p-4 mb-4 flex gap-4 items-start"
+              className="border rounded p-4 mb-4 flex gap-4 items-start cursor-pointer hover:bg-gray-50 transition"
+              onClick={() => router.push(`/viewDetails?_id=${item.id}`)}
             >
               <input
                 type="checkbox"
                 checked={selectedIds.includes(item.id)}
+                onClick={(e) => e.stopPropagation()}
                 onChange={() => toggleSelect(item.id)}
                 className="mt-1"
               />
@@ -112,6 +103,7 @@ export default function SimpleCart() {
                 src={item.images?.[0] || "/placeholder.svg"}
                 alt={item.name}
                 className="w-20 h-20 object-cover rounded"
+                onClick={(e) => e.stopPropagation()}
               />
               <div className="flex-1">
                 <h3 className="font-semibold">{item.name}</h3>
@@ -129,13 +121,19 @@ export default function SimpleCart() {
 
                 <div className="flex gap-2 mt-2">
                   <button
-                    onClick={() => decreaseQty(item.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      decreaseQty(item.id);
+                    }}
                     className="bg-gray-200 px-2 rounded hover:bg-gray-300"
                   >
                     -
                   </button>
                   <button
-                    onClick={() => increaseQty(item.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      increaseQty(item.id);
+                    }}
                     className="bg-gray-200 px-2 rounded hover:bg-gray-300"
                   >
                     +
@@ -143,7 +141,10 @@ export default function SimpleCart() {
                 </div>
               </div>
               <button
-                onClick={() => removeItem(item.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeItem(item.id);
+                }}
                 className="text-red-500 hover:text-red-700"
               >
                 <Trash2 size={20} />
