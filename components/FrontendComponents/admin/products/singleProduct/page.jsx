@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Pencil, Trash2, Save } from "lucide-react";
 import { deleteProduct, updateProduct } from "server/Functionality-product-page";
 import { useEdgeStore } from "@/components/edgestore";
-import { showCatalogue, SaveCatalogue } from "@/server/catalogue-functions"; // ✅ import both
+import { showCatalogue, SaveCatalogue } from "@/server/catalogue-functions";
 
 export default function AdminProductDetailPage() {
   const router = useRouter();
@@ -21,13 +21,12 @@ export default function AdminProductDetailPage() {
   const [editedProduct, setEditedProduct] = useState(null);
   const [categories, setCategories] = useState([""]);
   const [tags, setTags] = useState([""]);
-  const [catalogues, setCatalogues] = useState([""]); // ✅ list of all available catalogues
+  const [catalogues, setCatalogues] = useState([""]);
   const [imageUrls, setImageUrls] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const { edgestore } = useEdgeStore();
 
-  // fetch product data
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -51,7 +50,6 @@ export default function AdminProductDetailPage() {
     if (_id) fetchProduct();
   }, [_id]);
 
-  // fetch catalogue list from DB
   useEffect(() => {
     async function fetchCatalogues() {
       const names = await showCatalogue();
@@ -86,26 +84,16 @@ export default function AdminProductDetailPage() {
 
   const handleAddCategory = () => setCategories([...categories, ""]);
   const handleCategoryChange = (i, value) => {
-    const newC = [...categories]; newC[i] = value; setCategories(newC);
+    const newC = [...categories];
+    newC[i] = value;
+    setCategories(newC);
   };
 
   const handleAddTag = () => setTags([...tags, ""]);
   const handleTagChange = (i, value) => {
-    const newT = [...tags]; newT[i] = value; setTags(newT);
-  };
-
-  const handleUpload = async (e) => {
-    const files = e.target.files;
-    if (!files) return;
-    const urls = [];
-    for (let file of files) {
-      const res = await edgestore.publicFiles.upload({
-        file,
-        onProgressChange: (p) => console.log("Upload progress:", p),
-      });
-      urls.push(res.url);
-    }
-    setImageUrls(urls);
+    const newT = [...tags];
+    newT[i] = value;
+    setTags(newT);
   };
 
   if (loading) return <div className="text-center p-6">Loading product...</div>;
@@ -118,24 +106,70 @@ export default function AdminProductDetailPage() {
         <CardContent className="p-4 space-y-4">
           {isEditing ? (
             <>
+              <label className="font-semibold text-sm">Product Name</label>
               <Input value={editedProduct.name} onChange={(e) => handleChange("name", e.target.value)} />
+
+              <label className="font-semibold text-sm">Title</label>
               <Input value={editedProduct.title} onChange={(e) => handleChange("title", e.target.value)} />
 
               <div className="flex gap-2">
-                <Input type="number" value={editedProduct.originalPrice} onChange={(e) => handleChange("originalPrice", Number(e.target.value))} placeholder="Original Price" />
-                <Input type="number" value={editedProduct.discountedPrice} onChange={(e) => handleChange("discountedPrice", Number(e.target.value))} placeholder="Discounted Price" />
+                <div className="flex-1">
+                  <label className="font-semibold text-sm">Original Price</label>
+                  <Input
+                    type="number"
+                    value={editedProduct.originalPrice}
+                    onChange={(e) => handleChange("originalPrice", Number(e.target.value))}
+                    placeholder="Original Price"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="font-semibold text-sm">Discounted Price</label>
+                  <Input
+                    type="number"
+                    value={editedProduct.discountedPrice}
+                    onChange={(e) => handleChange("discountedPrice", Number(e.target.value))}
+                    placeholder="Discounted Price"
+                  />
+                </div>
               </div>
 
-              <Input type="number" value={editedProduct.quantity} onChange={(e) => handleChange("quantity", Number(e.target.value))} placeholder="Quantity" />
-              <Input value={editedProduct.paymentMethod} onChange={(e) => handleChange("paymentMethod", e.target.value)} placeholder="Payment Method" />
+              <label className="font-semibold text-sm">Shipping Price</label>
+              <Input
+                type="number"
+                value={editedProduct.shippingPrice || 0}
+                onChange={(e) => handleChange("shippingPrice", Number(e.target.value))}
+                placeholder="Shipping Price"
+              />
+
+              <label className="font-semibold text-sm">Quantity</label>
+              <Input
+                type="number"
+                value={editedProduct.quantity}
+                onChange={(e) => handleChange("quantity", Number(e.target.value))}
+                placeholder="Quantity"
+              />
+
+              <label className="font-semibold text-sm">Payment Method</label>
+              <Input
+                value={editedProduct.paymentMethod}
+                onChange={(e) => handleChange("paymentMethod", e.target.value)}
+                placeholder="Payment Method"
+              />
 
               {/* Categories */}
               <div>
                 <p className="text-sm font-semibold">Categories</p>
                 {categories.map((cat, i) => (
-                  <Input key={i} value={cat} onChange={(e) => handleCategoryChange(i, e.target.value)} className="mb-1" />
+                  <Input
+                    key={i}
+                    value={cat}
+                    onChange={(e) => handleCategoryChange(i, e.target.value)}
+                    className="mb-1"
+                  />
                 ))}
-                <Button type="button" variant="outline" size="sm" onClick={handleAddCategory}>+ Add Category</Button>
+                <Button type="button" variant="outline" size="sm" onClick={handleAddCategory}>
+                  + Add Category
+                </Button>
               </div>
 
               {/* Catalogues multi-select */}
@@ -151,12 +185,12 @@ export default function AdminProductDetailPage() {
                           if (e.target.checked) {
                             setEditedProduct(prev => ({
                               ...prev,
-                              catalogues: [...(prev.catalogues || []), cat]
+                              catalogues: [...(prev.catalogues || []), cat],
                             }));
                           } else {
                             setEditedProduct(prev => ({
                               ...prev,
-                              catalogues: prev.catalogues?.filter(c => c !== cat)
+                              catalogues: prev.catalogues?.filter(c => c !== cat),
                             }));
                           }
                         }}
@@ -173,28 +207,33 @@ export default function AdminProductDetailPage() {
                     const newCat = prompt("Enter new catalogue name:");
                     if (newCat) {
                       setCatalogues([...catalogues, newCat]);
-                      await SaveCatalogue({ name: newCat }); // ✅ save to DB too
+                      await SaveCatalogue({ name: newCat });
                     }
                   }}
                 >
                   + Add Catalogue
                 </Button>
-
               </div>
 
               {/* Tags */}
               <div>
                 <p className="text-sm font-semibold">Tags</p>
                 {tags.map((tag, i) => (
-                  <Input key={i} value={tag} onChange={(e) => handleTagChange(i, e.target.value)} className="mb-1 w-32" />
+                  <Input
+                    key={i}
+                    value={tag}
+                    onChange={(e) => handleTagChange(i, e.target.value)}
+                    className="mb-1 w-32"
+                  />
                 ))}
-                <Button type="button" variant="outline" size="sm" onClick={handleAddTag}>+ Add Tag</Button>
+                <Button type="button" variant="outline" size="sm" onClick={handleAddTag}>
+                  + Add Tag
+                </Button>
               </div>
 
-              {/* Images */}
+              {/* Images (View Only) */}
               <div>
-                <p className="text-sm font-semibold">Images</p>
-                <Input type="file" multiple onChange={handleUpload} />
+                <p className="text-sm font-semibold">Images (View Only)</p>
                 <div className="flex gap-2 mt-2 flex-wrap">
                   {imageUrls.map((url, i) => (
                     <img key={i} src={url} alt="" className="w-16 h-16 object-cover rounded" />
@@ -202,15 +241,30 @@ export default function AdminProductDetailPage() {
                 </div>
               </div>
 
-              <Textarea value={editedProduct.description} onChange={(e) => handleChange("description", e.target.value)} placeholder="Description" />
+              <label className="font-semibold text-sm">Description</label>
+              <Textarea
+                value={editedProduct.description}
+                onChange={(e) => handleChange("description", e.target.value)}
+                placeholder="Description"
+              />
             </>
           ) : (
             <>
               <div className="relative">
-                <img src={editedProduct.images?.[currentImage]} alt="" className="w-full h-80 object-cover rounded-xl" />
+                <img
+                  src={editedProduct.images?.[currentImage]}
+                  alt=""
+                  className="w-full h-80 object-cover rounded-xl"
+                />
                 <div className="flex justify-center mt-2 space-x-2">
                   {editedProduct.images?.map((_, index) => (
-                    <button key={index} onClick={() => setCurrentImage(index)} className={`w-3 h-3 rounded-full ${currentImage === index ? "bg-blue-500" : "bg-gray-300"}`}></button>
+                    <button
+                      key={index}
+                      onClick={() => setCurrentImage(index)}
+                      className={`w-3 h-3 rounded-full ${
+                        currentImage === index ? "bg-blue-500" : "bg-gray-300"
+                      }`}
+                    ></button>
                   ))}
                 </div>
               </div>
@@ -218,6 +272,7 @@ export default function AdminProductDetailPage() {
               <p>{editedProduct.title}</p>
               <p className="text-green-600 font-bold">Rs.{editedProduct.discountedPrice}</p>
               <p className="line-through text-gray-400">Rs.{editedProduct.originalPrice}</p>
+              <p>Shipping Price: Rs.{editedProduct.shippingPrice || 0}</p>
               <p>Quantity: {editedProduct.quantity}</p>
               <p>Payment Method: {editedProduct.paymentMethod?.toUpperCase()}</p>
               <p>Categories: {editedProduct.categories?.join(", ")}</p>
@@ -229,11 +284,17 @@ export default function AdminProductDetailPage() {
 
           <div className="flex gap-2 mt-4">
             {isEditing ? (
-              <Button variant="success" onClick={handleSave}><Save className="w-4 h-4 mr-2" /> Save</Button>
+              <Button variant="success" onClick={handleSave}>
+                <Save className="w-4 h-4 mr-2" /> Save
+              </Button>
             ) : (
-              <Button variant="outline" onClick={handleEdit}><Pencil className="w-4 h-4 mr-2" /> Edit</Button>
+              <Button variant="outline" onClick={handleEdit}>
+                <Pencil className="w-4 h-4 mr-2" /> Edit
+              </Button>
             )}
-            <Button variant="destructive" onClick={handleDelete}><Trash2 className="w-4 h-4 mr-2" /> Delete</Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              <Trash2 className="w-4 h-4 mr-2" /> Delete
+            </Button>
           </div>
         </CardContent>
       </Card>

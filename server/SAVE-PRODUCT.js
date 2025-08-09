@@ -6,10 +6,26 @@ import products from "@/components/models/products";
 
 export default async function SaveProduct(data) {
     await ConnectDB();
-    console.log("RECEIVED DATA FROM FROTNEDN", data);
+    console.log("RECEIVED DATA FROM FRONTEND", data);
 
-    const { name, tags, originalPrice, discountedPrice, title, quantity, description, paymentMethod, categories, urls,catalogues,variantUrls  } = data;
+    // Destructure shipping_price from data
+    const { 
+        name, 
+        tags, 
+        originalPrice, 
+        discountedPrice, 
+        title, 
+        quantity, 
+        description, 
+        paymentMethod, 
+        categories, 
+        urls, 
+        catalogues, 
+        variantUrls,
+        shipping_price // ✅ Added here
+    } = data;
 
+    // Save to database
     await products.create({
         name: name,
         originalPrice: originalPrice,
@@ -22,10 +38,9 @@ export default async function SaveProduct(data) {
         images: urls,
         variantsImages: variantUrls,
         tags: tags,
-        catalogues: catalogues
-        
+        catalogues: catalogues,
+        shipping_price: shipping_price || 0 // ✅ Save, default 0 if undefined
     });
-    console.log("SAVED PRODUCT", data)
 
-
+    console.log("SAVED PRODUCT", data);
 }
