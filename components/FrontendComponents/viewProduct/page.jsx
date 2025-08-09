@@ -12,10 +12,12 @@ import {
 import { useSearchParams } from "next/navigation";
 import ViewProduct from "@/server/viewProduct";
 import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 export default function ViewProductPage() {
   const searchParams = useSearchParams();
   const _id = searchParams.get("_id");
+  const router = useRouter()
 
   const [productdata, setProductdata] = useState({
     title: "",
@@ -146,9 +148,8 @@ export default function ViewProductPage() {
                 {productdata.images.map((_, idx) => (
                   <span
                     key={idx}
-                    className={`h-1.5 w-1.5 rounded-full transition-all duration-200 ${
-                      selectedImage === idx ? "bg-white scale-125" : "bg-gray-400/70"
-                    }`}
+                    className={`h-1.5 w-1.5 rounded-full transition-all duration-200 ${selectedImage === idx ? "bg-white scale-125" : "bg-gray-400/70"
+                      }`}
                   />
                 ))}
               </div>
@@ -204,7 +205,9 @@ export default function ViewProductPage() {
 
           {/* Buttons */}
           <div className="flex gap-2 mt-2">
-            <Button className="flex-1 bg-blue-600 text-white hover:bg-blue-700 text-xs sm:text-sm">
+            <Button
+              onClick={()=>{router.push(`/../checkoutPage?_id=${_id}`)}}
+              className="flex-1 bg-blue-600 text-white hover:bg-blue-700 text-xs sm:text-sm">
               Buy
             </Button>
             <Button
