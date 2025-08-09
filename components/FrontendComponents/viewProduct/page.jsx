@@ -202,6 +202,8 @@ export default function ViewProductPage() {
               </button>
             </div>
           </div>
+          <br />
+          <p className="text-red-500">colours will be confirmed at the time of order confirmation on wahtsapp <br/>Sorry for inconvenience......</p>
 
           {/* Buttons */}
           <div className="flex gap-2 mt-2">
