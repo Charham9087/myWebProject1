@@ -9,30 +9,30 @@ import mongoose from "mongoose"; // combine all imports
 // Get All Orders (List Page)
 // ==========================
 export async function ShowOrderPageData() {
-    try {
-        await ConnectDB();
-        console.log('connected to DB successfully');
+  try {
+    await ConnectDB();
+    console.log('connected to DB successfully');
 
-        const ordersFromDB = await Orders.find({}).lean();
-        const serializableOrders = JSON.parse(JSON.stringify(ordersFromDB));
+    const ordersFromDB = await Orders.find({}).lean();
+    const serializableOrders = JSON.parse(JSON.stringify(ordersFromDB));
 
-        return serializableOrders.map((order) => {
-            const { _id, ...rest } = order;
-            return { ...rest, orderID: _id };
-        });
-    } catch (error) {
-        console.error("Error fetching orders:", error);
-        return [];
-    }
+    return serializableOrders.map((order) => {
+      const { _id, ...rest } = order;
+      return { ...rest, orderID: _id };
+    });
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+    return [];
+  }
 }
 
 // ==========================
 // Delete Order
 // ==========================
 export async function deleteOrder(id) {
-    await ConnectDB();
-    const deleted = await Orders.findByIdAndDelete(id);
-    return deleted ? true : false;
+  await ConnectDB();
+  const deleted = await Orders.findByIdAndDelete(id);
+  return deleted ? true : false;
 }
 
 // ==========================
@@ -67,5 +67,25 @@ export async function ViewOrderDetailFromDB(id) {
   } catch (error) {
     console.error("Error in ViewOrderDetailFromDB:", error);
     return { error: "Failed to fetch order detail" };
+  }
+}
+export async function UpdateAdvanceAmount(orderID, advanceAmount,total) {
+  try {
+    await ConnectDB();
+
+    // Convert string id to ObjectId
+    const objectId = new mongoose.Types.ObjectId(orderID);
+
+    await Orders.updateOne(
+      { _id: objectId },              // use _id here
+      { $set: { AdvanceAmount: advanceAmount, total:total},
+      }
+    
+    );
+    console.log("updated advance amount")
+    return { success: true };
+  } catch (err) {
+    console.error("Error updating AdvanceAmount:", err);
+    throw new Error("Failed to update advance amount");
   }
 }

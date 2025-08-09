@@ -11,7 +11,7 @@ const OrdersSchema = new mongoose.Schema({
     total: { type: Number },
     productID: [{ type: String }], 
     orderID: { type: String },
-    AdvanceAmount:{type:Number},
+    AdvanceAmount:{type:Number , default:0},
 }, {
     timestamps: true,
     collection: "Orders"

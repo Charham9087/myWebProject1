@@ -91,13 +91,9 @@ export default function AdminProductDetailPage() {
 
   const handleAddTag = () => setTags([...tags, ""]);
   const handleTagChange = (i, value) => {
-<<<<<<< HEAD
-    const newT = [...tags]; newT[i] = value; setTags(newT);
-=======
     const newT = [...tags];
     newT[i] = value;
     setTags(newT);
->>>>>>> testing
   };
 
   if (loading) return <div className="text-center p-6">Loading product...</div>;
@@ -110,20 +106,11 @@ export default function AdminProductDetailPage() {
         <CardContent className="p-4 space-y-4">
           {isEditing ? (
             <>
-<<<<<<< HEAD
-              {/* Name */}
-              <label className="text-sm font-semibold">Product Name</label>
-              <Input
-                value={editedProduct.name}
-                onChange={(e) => handleChange("name", e.target.value)}
-              />
-=======
               <label className="font-semibold text-sm">Product Name</label>
               <Input value={editedProduct.name} onChange={(e) => handleChange("name", e.target.value)} />
 
               <label className="font-semibold text-sm">Title</label>
               <Input value={editedProduct.title} onChange={(e) => handleChange("title", e.target.value)} />
->>>>>>> testing
 
               {/* Title */}
               <label className="text-sm font-semibold mt-2">Title</label>
@@ -135,33 +122,6 @@ export default function AdminProductDetailPage() {
               {/* Prices */}
               <label className="text-sm font-semibold mt-2">Prices</label>
               <div className="flex gap-2">
-<<<<<<< HEAD
-                <Input
-                  type="number"
-                  value={editedProduct.originalPrice}
-                  onChange={(e) => handleChange("originalPrice", Number(e.target.value))}
-                  placeholder="Original Price"
-                />
-                <Input
-                  type="number"
-                  value={editedProduct.discountedPrice}
-                  onChange={(e) => handleChange("discountedPrice", Number(e.target.value))}
-                  placeholder="Discounted Price"
-                />
-              </div>
-
-              {/* Shipping Price */}
-              <label className="text-sm font-semibold mt-2">Shipping Price</label>
-              <Input
-                type="number"
-                value={editedProduct.shipping_price || ""}
-                onChange={(e) => handleChange("shipping_price", Number(e.target.value))}
-                placeholder="Shipping Price"
-              />
-
-              {/* Quantity */}
-              <label className="text-sm font-semibold mt-2">Quantity</label>
-=======
                 <div className="flex-1">
                   <label className="font-semibold text-sm">Original Price</label>
                   <Input
@@ -191,7 +151,6 @@ export default function AdminProductDetailPage() {
               />
 
               <label className="font-semibold text-sm">Quantity</label>
->>>>>>> testing
               <Input
                 type="number"
                 value={editedProduct.quantity}
@@ -199,12 +158,7 @@ export default function AdminProductDetailPage() {
                 placeholder="Quantity"
               />
 
-<<<<<<< HEAD
-              {/* Payment Method */}
-              <label className="text-sm font-semibold mt-2">Payment Method</label>
-=======
               <label className="font-semibold text-sm">Payment Method</label>
->>>>>>> testing
               <Input
                 value={editedProduct.paymentMethod}
                 onChange={(e) => handleChange("paymentMethod", e.target.value)}
@@ -286,15 +240,9 @@ export default function AdminProductDetailPage() {
                 </Button>
               </div>
 
-<<<<<<< HEAD
-              {/* Images */}
-              <div className="mt-2">
-                <label className="text-sm font-semibold">Images</label>
-=======
               {/* Images (View Only) */}
               <div>
                 <p className="text-sm font-semibold">Images (View Only)</p>
->>>>>>> testing
                 <div className="flex gap-2 mt-2 flex-wrap">
                   {imageUrls.map((url, i) => (
                     <img key={i} src={url} alt="" className="w-16 h-16 object-cover rounded" />
@@ -302,12 +250,7 @@ export default function AdminProductDetailPage() {
                 </div>
               </div>
 
-<<<<<<< HEAD
-              {/* Description */}
-              <label className="text-sm font-semibold mt-2">Description</label>
-=======
               <label className="font-semibold text-sm">Description</label>
->>>>>>> testing
               <Textarea
                 value={editedProduct.description}
                 onChange={(e) => handleChange("description", e.target.value)}
@@ -328,33 +271,15 @@ export default function AdminProductDetailPage() {
                     <button
                       key={index}
                       onClick={() => setCurrentImage(index)}
-<<<<<<< HEAD
-                      className={`w-3 h-3 rounded-full ${currentImage === index ? "bg-blue-500" : "bg-gray-300"
-                        }`}
-=======
                       className={`w-3 h-3 rounded-full ${
                         currentImage === index ? "bg-blue-500" : "bg-gray-300"
                       }`}
->>>>>>> testing
                     ></button>
                   ))}
                 </div>
               </div>
 
               <h2 className="text-xl font-semibold">{editedProduct.name}</h2>
-<<<<<<< HEAD
-
-              <p><strong>Title:</strong> {editedProduct.title}</p>
-              <p><strong>Discounted Price:</strong> Rs.{editedProduct.discountedPrice}</p>
-              <p><strong>Original Price:</strong> <span className="line-through text-gray-400">Rs.{editedProduct.originalPrice}</span></p>
-              <p><strong>Shipping Price:</strong> Rs.{editedProduct.shipping_price}</p>
-              <p><strong>Quantity:</strong> {editedProduct.quantity}</p>
-              <p><strong>Payment Method:</strong> {editedProduct.paymentMethod?.toUpperCase()}</p>
-              <p><strong>Categories:</strong> {editedProduct.categories?.join(", ")}</p>
-              <p><strong>Catalogues:</strong> {editedProduct.catalogues?.join(", ")}</p>
-              <p><strong>Tags:</strong> {editedProduct.tags?.join(", ")}</p>
-              <p><strong>Description:</strong> {editedProduct.description}</p>
-=======
               <p>{editedProduct.title}</p>
               <p className="text-green-600 font-bold">Rs.{editedProduct.discountedPrice}</p>
               <p className="line-through text-gray-400">Rs.{editedProduct.originalPrice}</p>
@@ -365,7 +290,6 @@ export default function AdminProductDetailPage() {
               <p>Catalogues: {editedProduct.catalogues?.join(", ")}</p>
               <p>Tags: {editedProduct.tags?.join(", ")}</p>
               <p>{editedProduct.description}</p>
->>>>>>> testing
             </>
 
           )}

@@ -1,8 +1,4 @@
-"use server";
 
-import ConnectDB from "@/components/mongoConnect";
-import Orders from "@/components/models/orders";
-import Products from "@/components/models/products";
     "use server"
     import ConnectDB from "@/components/mongoConnect";
     import orders from "@/components/models/orders";

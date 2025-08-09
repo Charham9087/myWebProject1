@@ -2,20 +2,38 @@
 
 import { useState, useEffect } from "react";
 import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
+  Card, CardHeader, CardTitle, CardContent, CardFooter
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { BadgeCheck, XCircle, Eye, Truck, User2 } from "lucide-react";
-import { ShowOrderPageData } from "@/server/orders";
+import { BadgeCheck, XCircle, Eye, Truck, User2, Pencil, Save } from "lucide-react";
+import { ShowOrderPageData, UpdateAdvanceAmount } from "@/server/orders";
 import { useRouter } from "next/navigation";
+
+function ConfirmModal({ message, onConfirm, onCancel }) {
+  return (
+  <div
+  className="fixed inset-0 bg-black/20 flex items-center justify-center z-50 pointer-events-auto"
+  role="dialog"
+  aria-modal="true"
+>
+  <div className="bg-white p-6 rounded shadow-lg max-w-sm w-full">
+    <p className="mb-4" dangerouslySetInnerHTML={{ __html: message }} />
+    <div className="flex justify-end gap-2">
+      <Button variant="outline" onClick={onCancel}>Cancel</Button>
+      <Button onClick={onConfirm}>Confirm</Button>
+    </div>
+  </div>
+</div>
+
+  );
+}
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState([]);
+  const [editingAdvanceId, setEditingAdvanceId] = useState(null);
+  const [confirmData, setConfirmData] = useState(null); // { id, message, resolve }
+  const [notification, setNotification] = useState(null); // { type: 'success'|'error', message }
   const router = useRouter();
 
   useEffect(() => {
@@ -25,61 +43,105 @@ export default function AdminOrdersPage() {
         setOrders(ordersData);
       } catch (error) {
         console.error("Failed to fetch orders:", error);
+        setNotification({ type: 'error', message: 'Failed to load orders.' });
       }
     };
-
     fetchOrders();
   }, []);
 
+  function handleAdvanceChange(id, value) {
+    setOrders((prev) => prev.map((order) =>
+      order.orderID === id ? { ...order, AdvanceAmount: parseFloat(value) || 0 } : order
+    ));
+  }
+
+  // Custom confirm dialog that returns a Promise<boolean>
+  function customConfirm(message) {
+    return new Promise((resolve) => {
+      setConfirmData({ message, resolve });
+    });
+  }
+
+  const saveAdvanceAmount = async (id) => {
+    try {
+      const order = orders.find(o => o.orderID === id);
+      if (!order) return;
+
+      const message = `Are you sure you want to add <strong>Rs.${order.AdvanceAmount}</strong> to order #: ${order.orderID}?`;
+      const confirmed = await customConfirm(message);
+      if (!confirmed) return; // user canceled
+
+      const remaining = (order.total ?? 0) - (order.AdvanceAmount ?? 0);
+
+      await UpdateAdvanceAmount(id, order.AdvanceAmount, remaining);
+
+      // Refetch updated orders list
+      const updatedOrders = await ShowOrderPageData();
+      setOrders(updatedOrders);
+      setEditingAdvanceId(null);
+
+      setNotification({ type: "success", message: `Advance amount updated for order ${id}` });
+    } catch (err) {
+      console.error(err);
+      setNotification({ type: "error", message: "Failed to update advance amount." });
+    }
+  };
+
+  const closeConfirm = (answer) => {
+    if (confirmData) {
+      confirmData.resolve(answer);
+      setConfirmData(null);
+    }
+  };
+
+  // Notification UI (simple)
+  const Notification = () => (
+    notification && (
+      <div
+        className={`fixed top-4 right-4 px-4 py-2 rounded shadow text-white ${
+          notification.type === "success" ? "bg-green-600" : "bg-red-600"
+        }`}
+        onClick={() => setNotification(null)}
+        style={{ cursor: "pointer", zIndex: 1000 }}
+      >
+        {notification.message}
+      </div>
+    )
+  );
+
+  // ... rest of your toggleVerify, toggleShipped, cancelOrder, restoreOrder, viewDetails stay same
+
   const toggleVerify = (id) => {
-    setOrders((prev) =>
-      prev.map((order) =>
-        order.orderID === id
-          ? { ...order, verified: !order.verified }
-          : order
-      )
-    );
+    setOrders((prev) => prev.map((order) =>
+      order.orderID === id ? { ...order, verified: !order.verified } : order
+    ));
   };
 
   const toggleShipped = (id) => {
-    setOrders((prev) =>
-      prev.map((order) =>
-        order.orderID === id
-          ? {
-            ...order,
-            status: order.status === "Shipped" ? "Pending" : "Shipped",
-          }
-          : order
-      )
-    );
+    setOrders((prev) => prev.map((order) =>
+      order.orderID === id
+        ? { ...order, status: order.status === "Shipped" ? "Pending" : "Shipped" }
+        : order
+    ));
   };
 
   const cancelOrder = (id) => {
-    const confirmed = window.confirm("❌ Are you sure you want to cancel this order?");
-    if (confirmed) {
-      setOrders((prev) =>
-        prev.map((order) =>
-          order.orderID === id
-            ? { ...order, cancelled: true, status: "Cancelled" }
-            : order
-        )
-      );
-      alert(`Order ${id} cancelled.`);
-    } else {
-      alert("Cancellation aborted.");
+    if (window.confirm("❌ Are you sure you want to cancel this order?")) {
+      setOrders((prev) => prev.map((order) =>
+        order.orderID === id
+          ? { ...order, cancelled: true, status: "Cancelled" }
+          : order
+      ));
+      setNotification({ type: "success", message: `Order ${id} cancelled.` });
     }
   };
-  const restoreOrder = (id) => {
-    setOrders((prev) =>
-      prev.map((order) =>
-        order.orderID === id
-          ? { ...order, cancelled: false, status: "Pending" }
-          : order
-      )
-    );
-    alert(`✅ Order ${id} restored.`);
-  };
 
+  const restoreOrder = (id) => {
+    setOrders((prev) => prev.map((order) =>
+      order.orderID === id ? { ...order, cancelled: false, status: "Pending" } : order
+    ));
+    setNotification({ type: "success", message: `Order ${id} restored.` });
+  };
 
   const viewDetails = (id) => {
     router.push(`/admin/orders/viewOrderDetails?_id=${id}`);
@@ -87,42 +149,31 @@ export default function AdminOrdersPage() {
 
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto">
-      <h1 className="text-2xl sm:text-4xl font-bold text-gray-800 dark:text-white mb-6 sm:mb-8 text-center sm:text-left">
+      <h1 className="text-2xl sm:text-4xl font-bold text-gray-800 dark:text-white mb-6 sm:mb-8">
         📦 Admin Orders
       </h1>
 
+      {notification && <Notification />}
+
       <div className="space-y-6">
         {orders.map((order) => (
-          <Card
-            key={order.orderID}
-            className={`rounded-2xl shadow-md transition duration-200 hover:shadow-lg border-2 ${order.verified
-              ? "border-green-400"
-              : "border-gray-200 dark:border-gray-700"
-              }`}
-          >
+          <Card key={order.orderID} className="rounded-2xl shadow-md border-2">
             <CardHeader>
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                <CardTitle className="text-lg sm:text-xl font-bold flex items-center gap-2">
-                  <User2 className="w-5 h-5" />
-                  {order.orderID}
+              <div className="flex justify-between items-center">
+                <CardTitle className="flex items-center gap-2">
+                  <User2 className="w-5 h-5" /> {order.orderID}
                 </CardTitle>
                 <div className="flex gap-2 flex-wrap">
-                  <span
-                    className={`px-2 py-0.5 text-xs rounded-full font-medium ${order.verified
-                      ? "bg-green-100 text-green-700"
-                      : "bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
-                      }`}
-                  >
+                  <span className={`px-2 py-0.5 text-xs rounded-full font-medium ${order.verified ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-800"
+                    }`}>
                     {order.verified ? "✅ Verified" : "❌ Not Verified"}
                   </span>
-                  <span
-                    className={`px-2 py-0.5 text-xs rounded-full font-medium ${order.status === "Shipped"
-                      ? "bg-green-100 text-green-700"
-                      : order.status === "Cancelled"
-                        ? "bg-red-100 text-red-700"
-                        : "bg-yellow-100 text-yellow-800"
-                      }`}
-                  >
+                  <span className={`px-2 py-0.5 text-xs rounded-full font-medium ${order.status === "Shipped"
+                    ? "bg-green-100 text-green-700"
+                    : order.status === "Cancelled"
+                      ? "bg-red-100 text-red-700"
+                      : "bg-yellow-100 text-yellow-800"
+                    }`}>
                     {order.status}
                   </span>
                 </div>
@@ -132,96 +183,98 @@ export default function AdminOrdersPage() {
             <Separator />
 
             <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-4 text-sm">
-              {/* Customer Info */}
-              <div className="space-y-1">
-                <h4 className="font-semibold text-gray-700 dark:text-gray-200">
-                  🧍 Customer
-                </h4>
+              <div>
+                <h4 className="font-semibold">🧍 Customer</h4>
                 <p>{order.name}</p>
                 <p>{order.email}</p>
                 <p>{order.phone}</p>
               </div>
 
-              {/* Shipping Info */}
-              <div className="space-y-1">
-                <h4 className="font-semibold text-gray-700 dark:text-gray-200">
-                  🚚 Shipping
-                </h4>
+              <div>
+                <h4 className="font-semibold">🚚 Shipping</h4>
                 <p>{order.address}</p>
-                <p>
-                  {order.city}, {order.postal}
-                </p>
+                <p>{order.city}, {order.postal}</p>
               </div>
 
-              {/* Order Info */}
-              <div className="space-y-1">
-                <h4 className="font-semibold text-gray-700 dark:text-gray-200">
-                  🧾 Order Summary
-                </h4>
+              <div>
+                <h4 className="font-semibold">🧾 Order Summary</h4>
+                <p>Total: Rs.{(order.total ?? 0).toFixed(2)}</p>
                 <p>
-                  Total:{" "}
-                  <span className="font-medium">
-                    Rs.{(order.total ?? 0).toFixed(2)}
-                  </span>
+                  Advance Paid:{" "}
+                  {editingAdvanceId === order.orderID ? (
+                    <>
+                      <input
+                        type="number"
+                        value={order.AdvanceAmount ?? 0}
+                        onChange={(e) =>
+                          handleAdvanceChange(order.orderID, e.target.value)
+                        }
+                        className="border p-1 rounded w-24"
+                      />
+                      <Button size="sm" className="ml-2"
+                        onClick={async () => {
+                          await saveAdvanceAmount(order.orderID);
+                        }}>
+                        <Save className="w-4 h-4" />
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <span className="font-medium text-blue-600">
+                        Rs.{(order.AdvanceAmount ?? 0).toFixed(2)}
+                      </span>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="ml-2"
+                        onClick={() => setEditingAdvanceId(order.orderID)}
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                    </>
+                  )}
                 </p>
                 <p>
-                  Status:{" "}
-                  <span className="font-medium">{order.status}</span>
+                  Remaining: Rs.{order.total}
                 </p>
+                <p>Status: {order.status}</p>
                 <p>Note: {order.comments || "—"}</p>
               </div>
             </CardContent>
 
             <Separator />
 
-            <CardFooter className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mt-4">
+            <CardFooter className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
               <Button size="sm" onClick={() => viewDetails(order.orderID)}>
                 <Eye className="w-4 h-4 mr-1" /> View
               </Button>
-
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => toggleShipped(order.orderID)}
-                disabled={order.cancelled}
-              >
-                <Truck className="w-4 h-4 mr-1" />
-                {order.status === "Shipped" ? "Mark as Pending" : "Mark as Shipped"}
+              <Button size="sm" variant="outline" onClick={() => toggleShipped(order.orderID)} disabled={order.cancelled}>
+                <Truck className="w-4 h-4 mr-1" /> {order.status === "Shipped" ? "Mark as Pending" : "Mark as Shipped"}
               </Button>
-
               {order.cancelled ? (
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => restoreOrder(order.orderID)}
-                >
+                <Button size="sm" variant="secondary" onClick={() => restoreOrder(order.orderID)}>
                   ♻️ Undo Cancel
                 </Button>
               ) : (
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  onClick={() => cancelOrder(order.orderID)}
-                >
-                  <XCircle className="w-4 h-4 mr-1" />
-                  Cancel
+                <Button size="sm" variant="destructive" onClick={() => cancelOrder(order.orderID)}>
+                  <XCircle className="w-4 h-4 mr-1" /> Cancel
                 </Button>
               )}
-
-
-              <Button
-                size="sm"
-                variant={order.verified ? "secondary" : "default"}
-                onClick={() => toggleVerify(order.orderID)}
-                disabled={order.cancelled}
-              >
-                <BadgeCheck className="w-4 h-4 mr-1" />
-                {order.verified ? "Unverify" : "Verify"}
+              <Button size="sm" variant={order.verified ? "secondary" : "default"} onClick={() => toggleVerify(order.orderID)} disabled={order.cancelled}>
+                <BadgeCheck className="w-4 h-4 mr-1" /> {order.verified ? "Unverify" : "Verify"}
               </Button>
             </CardFooter>
           </Card>
         ))}
       </div>
+
+      {confirmData && (
+        <ConfirmModal
+          message={confirmData.message}
+          onConfirm={() => closeConfirm(true)}
+          onCancel={() => closeConfirm(false)}
+        />
+      )}
     </div>
   );
 }
