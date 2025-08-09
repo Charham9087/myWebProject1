@@ -27,7 +27,6 @@ export default function AdminProductDetailPage() {
 
   const { edgestore } = useEdgeStore();
 
-  // fetch product data
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -51,7 +50,6 @@ export default function AdminProductDetailPage() {
     if (_id) fetchProduct();
   }, [_id]);
 
-  // fetch catalogue list from DB
   useEffect(() => {
     async function fetchCatalogues() {
       const names = await showCatalogue();
@@ -86,12 +84,20 @@ export default function AdminProductDetailPage() {
 
   const handleAddCategory = () => setCategories([...categories, ""]);
   const handleCategoryChange = (i, value) => {
-    const newC = [...categories]; newC[i] = value; setCategories(newC);
+    const newC = [...categories];
+    newC[i] = value;
+    setCategories(newC);
   };
 
   const handleAddTag = () => setTags([...tags, ""]);
   const handleTagChange = (i, value) => {
+<<<<<<< HEAD
     const newT = [...tags]; newT[i] = value; setTags(newT);
+=======
+    const newT = [...tags];
+    newT[i] = value;
+    setTags(newT);
+>>>>>>> testing
   };
 
   if (loading) return <div className="text-center p-6">Loading product...</div>;
@@ -104,12 +110,20 @@ export default function AdminProductDetailPage() {
         <CardContent className="p-4 space-y-4">
           {isEditing ? (
             <>
+<<<<<<< HEAD
               {/* Name */}
               <label className="text-sm font-semibold">Product Name</label>
               <Input
                 value={editedProduct.name}
                 onChange={(e) => handleChange("name", e.target.value)}
               />
+=======
+              <label className="font-semibold text-sm">Product Name</label>
+              <Input value={editedProduct.name} onChange={(e) => handleChange("name", e.target.value)} />
+
+              <label className="font-semibold text-sm">Title</label>
+              <Input value={editedProduct.title} onChange={(e) => handleChange("title", e.target.value)} />
+>>>>>>> testing
 
               {/* Title */}
               <label className="text-sm font-semibold mt-2">Title</label>
@@ -121,6 +135,7 @@ export default function AdminProductDetailPage() {
               {/* Prices */}
               <label className="text-sm font-semibold mt-2">Prices</label>
               <div className="flex gap-2">
+<<<<<<< HEAD
                 <Input
                   type="number"
                   value={editedProduct.originalPrice}
@@ -146,6 +161,37 @@ export default function AdminProductDetailPage() {
 
               {/* Quantity */}
               <label className="text-sm font-semibold mt-2">Quantity</label>
+=======
+                <div className="flex-1">
+                  <label className="font-semibold text-sm">Original Price</label>
+                  <Input
+                    type="number"
+                    value={editedProduct.originalPrice}
+                    onChange={(e) => handleChange("originalPrice", Number(e.target.value))}
+                    placeholder="Original Price"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="font-semibold text-sm">Discounted Price</label>
+                  <Input
+                    type="number"
+                    value={editedProduct.discountedPrice}
+                    onChange={(e) => handleChange("discountedPrice", Number(e.target.value))}
+                    placeholder="Discounted Price"
+                  />
+                </div>
+              </div>
+
+              <label className="font-semibold text-sm">Shipping Price</label>
+              <Input
+                type="number"
+                value={editedProduct.shippingPrice || 0}
+                onChange={(e) => handleChange("shippingPrice", Number(e.target.value))}
+                placeholder="Shipping Price"
+              />
+
+              <label className="font-semibold text-sm">Quantity</label>
+>>>>>>> testing
               <Input
                 type="number"
                 value={editedProduct.quantity}
@@ -153,8 +199,12 @@ export default function AdminProductDetailPage() {
                 placeholder="Quantity"
               />
 
+<<<<<<< HEAD
               {/* Payment Method */}
               <label className="text-sm font-semibold mt-2">Payment Method</label>
+=======
+              <label className="font-semibold text-sm">Payment Method</label>
+>>>>>>> testing
               <Input
                 value={editedProduct.paymentMethod}
                 onChange={(e) => handleChange("paymentMethod", e.target.value)}
@@ -190,12 +240,12 @@ export default function AdminProductDetailPage() {
                           if (e.target.checked) {
                             setEditedProduct(prev => ({
                               ...prev,
-                              catalogues: [...(prev.catalogues || []), cat]
+                              catalogues: [...(prev.catalogues || []), cat],
                             }));
                           } else {
                             setEditedProduct(prev => ({
                               ...prev,
-                              catalogues: prev.catalogues?.filter(c => c !== cat)
+                              catalogues: prev.catalogues?.filter(c => c !== cat),
                             }));
                           }
                         }}
@@ -236,9 +286,15 @@ export default function AdminProductDetailPage() {
                 </Button>
               </div>
 
+<<<<<<< HEAD
               {/* Images */}
               <div className="mt-2">
                 <label className="text-sm font-semibold">Images</label>
+=======
+              {/* Images (View Only) */}
+              <div>
+                <p className="text-sm font-semibold">Images (View Only)</p>
+>>>>>>> testing
                 <div className="flex gap-2 mt-2 flex-wrap">
                   {imageUrls.map((url, i) => (
                     <img key={i} src={url} alt="" className="w-16 h-16 object-cover rounded" />
@@ -246,8 +302,12 @@ export default function AdminProductDetailPage() {
                 </div>
               </div>
 
+<<<<<<< HEAD
               {/* Description */}
               <label className="text-sm font-semibold mt-2">Description</label>
+=======
+              <label className="font-semibold text-sm">Description</label>
+>>>>>>> testing
               <Textarea
                 value={editedProduct.description}
                 onChange={(e) => handleChange("description", e.target.value)}
@@ -268,14 +328,21 @@ export default function AdminProductDetailPage() {
                     <button
                       key={index}
                       onClick={() => setCurrentImage(index)}
+<<<<<<< HEAD
                       className={`w-3 h-3 rounded-full ${currentImage === index ? "bg-blue-500" : "bg-gray-300"
                         }`}
+=======
+                      className={`w-3 h-3 rounded-full ${
+                        currentImage === index ? "bg-blue-500" : "bg-gray-300"
+                      }`}
+>>>>>>> testing
                     ></button>
                   ))}
                 </div>
               </div>
 
               <h2 className="text-xl font-semibold">{editedProduct.name}</h2>
+<<<<<<< HEAD
 
               <p><strong>Title:</strong> {editedProduct.title}</p>
               <p><strong>Discounted Price:</strong> Rs.{editedProduct.discountedPrice}</p>
@@ -287,17 +354,35 @@ export default function AdminProductDetailPage() {
               <p><strong>Catalogues:</strong> {editedProduct.catalogues?.join(", ")}</p>
               <p><strong>Tags:</strong> {editedProduct.tags?.join(", ")}</p>
               <p><strong>Description:</strong> {editedProduct.description}</p>
+=======
+              <p>{editedProduct.title}</p>
+              <p className="text-green-600 font-bold">Rs.{editedProduct.discountedPrice}</p>
+              <p className="line-through text-gray-400">Rs.{editedProduct.originalPrice}</p>
+              <p>Shipping Price: Rs.{editedProduct.shippingPrice || 0}</p>
+              <p>Quantity: {editedProduct.quantity}</p>
+              <p>Payment Method: {editedProduct.paymentMethod?.toUpperCase()}</p>
+              <p>Categories: {editedProduct.categories?.join(", ")}</p>
+              <p>Catalogues: {editedProduct.catalogues?.join(", ")}</p>
+              <p>Tags: {editedProduct.tags?.join(", ")}</p>
+              <p>{editedProduct.description}</p>
+>>>>>>> testing
             </>
 
           )}
 
           <div className="flex gap-2 mt-4">
             {isEditing ? (
-              <Button variant="success" onClick={handleSave}><Save className="w-4 h-4 mr-2" /> Save</Button>
+              <Button variant="success" onClick={handleSave}>
+                <Save className="w-4 h-4 mr-2" /> Save
+              </Button>
             ) : (
-              <Button variant="outline" onClick={handleEdit}><Pencil className="w-4 h-4 mr-2" /> Edit</Button>
+              <Button variant="outline" onClick={handleEdit}>
+                <Pencil className="w-4 h-4 mr-2" /> Edit
+              </Button>
             )}
-            <Button variant="destructive" onClick={handleDelete}><Trash2 className="w-4 h-4 mr-2" /> Delete</Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              <Trash2 className="w-4 h-4 mr-2" /> Delete
+            </Button>
           </div>
         </CardContent>
       </Card>

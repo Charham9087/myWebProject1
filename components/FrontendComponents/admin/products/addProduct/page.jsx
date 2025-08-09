@@ -71,11 +71,10 @@ export default function AddProductPage() {
         variantUrls.push(res.url);
       }
     }
-    data.variantUrls = variantUrls; // even if empty
+    data.variantUrls = variantUrls;
 
-
-    data.files = [];      // Clear original files from payload
-    data.variants = [];   // Clear variant files from payload
+    data.files = [];
+    data.variants = [];
 
     console.log("Final data to save:", data);
     await SaveProduct(data);
@@ -127,6 +126,12 @@ export default function AddProductPage() {
               />
             </div>
 
+
+            {/* Shipping Price */}
+            <div className="grid gap-2">
+              <Label>Shipping Price</Label>
+              <Input type="number" placeholder="Rs.200" {...register("shipping_price", { required: true })} />
+            </div>
 
             {/* Categories multi-select */}
             <div className="grid gap-2">
@@ -191,7 +196,7 @@ export default function AddProductPage() {
               <Input type="file" multiple {...register("files", { required: true })} />
             </div>
 
-            {/* ✅ Variants images */}
+            {/* Variants images */}
             <div className="grid gap-2">
               <Label>Variants</Label>
               <Input type="file" multiple {...register("variants")} />
@@ -240,9 +245,9 @@ export default function AddProductPage() {
             </div>
 
             <Button type="submit" onClick={() => {
-              if (done === 'done') {
+           
                 router.push("/admin/products");
-              }
+              
             }}>
               Add Product
             </Button>
