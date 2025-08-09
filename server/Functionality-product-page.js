@@ -36,6 +36,7 @@ export async function updateProduct(data) {
     images: data.urls,
     tags: data.tags,
     catalogues: data.catalogues,
+    shipping_price:data.shipping_price,
   });
 
   console.log("PRODUCT UPDATED ✅");

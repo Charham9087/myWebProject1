@@ -117,6 +117,16 @@ export default function AddProductPage() {
                 <Input type="number" placeholder="Rs.800" {...register("discountedPrice", { required: true })} />
               </div>
             </div>
+            {/* dhipping details  */}
+            <div className="grid gap-2">
+              <Label>Shipping Price</Label>
+              <Input
+                type="number"
+                placeholder="Rs.150"
+                {...register("shipping_price", { required: true })}
+              />
+            </div>
+
 
             {/* Categories multi-select */}
             <div className="grid gap-2">

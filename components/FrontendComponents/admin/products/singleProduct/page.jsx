@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Pencil, Trash2, Save } from "lucide-react";
 import { deleteProduct, updateProduct } from "server/Functionality-product-page";
 import { useEdgeStore } from "@/components/edgestore";
-import { showCatalogue, SaveCatalogue } from "@/server/catalogue-functions"; // ✅ import both
+import { showCatalogue, SaveCatalogue } from "@/server/catalogue-functions";
 
 export default function AdminProductDetailPage() {
   const router = useRouter();
@@ -21,7 +21,7 @@ export default function AdminProductDetailPage() {
   const [editedProduct, setEditedProduct] = useState(null);
   const [categories, setCategories] = useState([""]);
   const [tags, setTags] = useState([""]);
-  const [catalogues, setCatalogues] = useState([""]); // ✅ list of all available catalogues
+  const [catalogues, setCatalogues] = useState([""]);
   const [imageUrls, setImageUrls] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -71,7 +71,7 @@ export default function AdminProductDetailPage() {
   const handleSave = async () => {
     const finalData = {
       ...editedProduct,
-      images: imageUrls,
+      images: imageUrls, // keep same images
     };
     console.log("Sending data to backend:", finalData);
     await updateProduct(finalData);
@@ -94,20 +94,6 @@ export default function AdminProductDetailPage() {
     const newT = [...tags]; newT[i] = value; setTags(newT);
   };
 
-  const handleUpload = async (e) => {
-    const files = e.target.files;
-    if (!files) return;
-    const urls = [];
-    for (let file of files) {
-      const res = await edgestore.publicFiles.upload({
-        file,
-        onProgressChange: (p) => console.log("Upload progress:", p),
-      });
-      urls.push(res.url);
-    }
-    setImageUrls(urls);
-  };
-
   if (loading) return <div className="text-center p-6">Loading product...</div>;
   if (!editedProduct) return <div className="text-center p-6 text-red-500">Product not found!</div>;
 
@@ -118,29 +104,82 @@ export default function AdminProductDetailPage() {
         <CardContent className="p-4 space-y-4">
           {isEditing ? (
             <>
-              <Input value={editedProduct.name} onChange={(e) => handleChange("name", e.target.value)} />
-              <Input value={editedProduct.title} onChange={(e) => handleChange("title", e.target.value)} />
+              {/* Name */}
+              <label className="text-sm font-semibold">Product Name</label>
+              <Input
+                value={editedProduct.name}
+                onChange={(e) => handleChange("name", e.target.value)}
+              />
 
+              {/* Title */}
+              <label className="text-sm font-semibold mt-2">Title</label>
+              <Input
+                value={editedProduct.title}
+                onChange={(e) => handleChange("title", e.target.value)}
+              />
+
+              {/* Prices */}
+              <label className="text-sm font-semibold mt-2">Prices</label>
               <div className="flex gap-2">
-                <Input type="number" value={editedProduct.originalPrice} onChange={(e) => handleChange("originalPrice", Number(e.target.value))} placeholder="Original Price" />
-                <Input type="number" value={editedProduct.discountedPrice} onChange={(e) => handleChange("discountedPrice", Number(e.target.value))} placeholder="Discounted Price" />
+                <Input
+                  type="number"
+                  value={editedProduct.originalPrice}
+                  onChange={(e) => handleChange("originalPrice", Number(e.target.value))}
+                  placeholder="Original Price"
+                />
+                <Input
+                  type="number"
+                  value={editedProduct.discountedPrice}
+                  onChange={(e) => handleChange("discountedPrice", Number(e.target.value))}
+                  placeholder="Discounted Price"
+                />
               </div>
 
-              <Input type="number" value={editedProduct.quantity} onChange={(e) => handleChange("quantity", Number(e.target.value))} placeholder="Quantity" />
-              <Input value={editedProduct.paymentMethod} onChange={(e) => handleChange("paymentMethod", e.target.value)} placeholder="Payment Method" />
+              {/* Shipping Price */}
+              <label className="text-sm font-semibold mt-2">Shipping Price</label>
+              <Input
+                type="number"
+                value={editedProduct.shipping_price || ""}
+                onChange={(e) => handleChange("shipping_price", Number(e.target.value))}
+                placeholder="Shipping Price"
+              />
+
+              {/* Quantity */}
+              <label className="text-sm font-semibold mt-2">Quantity</label>
+              <Input
+                type="number"
+                value={editedProduct.quantity}
+                onChange={(e) => handleChange("quantity", Number(e.target.value))}
+                placeholder="Quantity"
+              />
+
+              {/* Payment Method */}
+              <label className="text-sm font-semibold mt-2">Payment Method</label>
+              <Input
+                value={editedProduct.paymentMethod}
+                onChange={(e) => handleChange("paymentMethod", e.target.value)}
+                placeholder="Payment Method"
+              />
 
               {/* Categories */}
-              <div>
-                <p className="text-sm font-semibold">Categories</p>
+              <div className="mt-2">
+                <label className="text-sm font-semibold">Categories</label>
                 {categories.map((cat, i) => (
-                  <Input key={i} value={cat} onChange={(e) => handleCategoryChange(i, e.target.value)} className="mb-1" />
+                  <Input
+                    key={i}
+                    value={cat}
+                    onChange={(e) => handleCategoryChange(i, e.target.value)}
+                    className="mb-1"
+                  />
                 ))}
-                <Button type="button" variant="outline" size="sm" onClick={handleAddCategory}>+ Add Category</Button>
+                <Button type="button" variant="outline" size="sm" onClick={handleAddCategory}>
+                  + Add Category
+                </Button>
               </div>
 
-              {/* Catalogues multi-select */}
-              <div className="grid gap-2">
-                <p className="text-sm font-semibold">Catalogues</p>
+              {/* Catalogues */}
+              <div className="grid gap-2 mt-2">
+                <label className="text-sm font-semibold">Catalogues</label>
                 <div className="border rounded p-2 max-h-40 overflow-y-auto space-y-1">
                   {catalogues.map((cat, index) => (
                     <label key={index} className="flex items-center gap-2">
@@ -173,28 +212,33 @@ export default function AdminProductDetailPage() {
                     const newCat = prompt("Enter new catalogue name:");
                     if (newCat) {
                       setCatalogues([...catalogues, newCat]);
-                      await SaveCatalogue({ name: newCat }); // ✅ save to DB too
+                      await SaveCatalogue({ name: newCat });
                     }
                   }}
                 >
                   + Add Catalogue
                 </Button>
-
               </div>
 
               {/* Tags */}
-              <div>
-                <p className="text-sm font-semibold">Tags</p>
+              <div className="mt-2">
+                <label className="text-sm font-semibold">Tags</label>
                 {tags.map((tag, i) => (
-                  <Input key={i} value={tag} onChange={(e) => handleTagChange(i, e.target.value)} className="mb-1 w-32" />
+                  <Input
+                    key={i}
+                    value={tag}
+                    onChange={(e) => handleTagChange(i, e.target.value)}
+                    className="mb-1 w-32"
+                  />
                 ))}
-                <Button type="button" variant="outline" size="sm" onClick={handleAddTag}>+ Add Tag</Button>
+                <Button type="button" variant="outline" size="sm" onClick={handleAddTag}>
+                  + Add Tag
+                </Button>
               </div>
 
               {/* Images */}
-              <div>
-                <p className="text-sm font-semibold">Images</p>
-                <Input type="file" multiple onChange={handleUpload} />
+              <div className="mt-2">
+                <label className="text-sm font-semibold">Images</label>
                 <div className="flex gap-2 mt-2 flex-wrap">
                   {imageUrls.map((url, i) => (
                     <img key={i} src={url} alt="" className="w-16 h-16 object-cover rounded" />
@@ -202,29 +246,49 @@ export default function AdminProductDetailPage() {
                 </div>
               </div>
 
-              <Textarea value={editedProduct.description} onChange={(e) => handleChange("description", e.target.value)} placeholder="Description" />
+              {/* Description */}
+              <label className="text-sm font-semibold mt-2">Description</label>
+              <Textarea
+                value={editedProduct.description}
+                onChange={(e) => handleChange("description", e.target.value)}
+                placeholder="Description"
+              />
             </>
+
           ) : (
             <>
               <div className="relative">
-                <img src={editedProduct.images?.[currentImage]} alt="" className="w-full h-80 object-cover rounded-xl" />
+                <img
+                  src={editedProduct.images?.[currentImage]}
+                  alt=""
+                  className="w-full h-80 object-cover rounded-xl"
+                />
                 <div className="flex justify-center mt-2 space-x-2">
                   {editedProduct.images?.map((_, index) => (
-                    <button key={index} onClick={() => setCurrentImage(index)} className={`w-3 h-3 rounded-full ${currentImage === index ? "bg-blue-500" : "bg-gray-300"}`}></button>
+                    <button
+                      key={index}
+                      onClick={() => setCurrentImage(index)}
+                      className={`w-3 h-3 rounded-full ${currentImage === index ? "bg-blue-500" : "bg-gray-300"
+                        }`}
+                    ></button>
                   ))}
                 </div>
               </div>
+
               <h2 className="text-xl font-semibold">{editedProduct.name}</h2>
-              <p>{editedProduct.title}</p>
-              <p className="text-green-600 font-bold">Rs.{editedProduct.discountedPrice}</p>
-              <p className="line-through text-gray-400">Rs.{editedProduct.originalPrice}</p>
-              <p>Quantity: {editedProduct.quantity}</p>
-              <p>Payment Method: {editedProduct.paymentMethod?.toUpperCase()}</p>
-              <p>Categories: {editedProduct.categories?.join(", ")}</p>
-              <p>Catalogues: {editedProduct.catalogues?.join(", ")}</p>
-              <p>Tags: {editedProduct.tags?.join(", ")}</p>
-              <p>{editedProduct.description}</p>
+
+              <p><strong>Title:</strong> {editedProduct.title}</p>
+              <p><strong>Discounted Price:</strong> Rs.{editedProduct.discountedPrice}</p>
+              <p><strong>Original Price:</strong> <span className="line-through text-gray-400">Rs.{editedProduct.originalPrice}</span></p>
+              <p><strong>Shipping Price:</strong> Rs.{editedProduct.shipping_price}</p>
+              <p><strong>Quantity:</strong> {editedProduct.quantity}</p>
+              <p><strong>Payment Method:</strong> {editedProduct.paymentMethod?.toUpperCase()}</p>
+              <p><strong>Categories:</strong> {editedProduct.categories?.join(", ")}</p>
+              <p><strong>Catalogues:</strong> {editedProduct.catalogues?.join(", ")}</p>
+              <p><strong>Tags:</strong> {editedProduct.tags?.join(", ")}</p>
+              <p><strong>Description:</strong> {editedProduct.description}</p>
             </>
+
           )}
 
           <div className="flex gap-2 mt-4">
