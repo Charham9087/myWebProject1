@@ -161,7 +161,7 @@ export default function AdminOrdersPage() {
                 <p>
                   Total:{" "}
                   <span className="font-medium">
-                    ${(order.total ?? 0).toFixed(2)}
+                    Rs.{(order.total ?? 0).toFixed(2)}
                   </span>
                 </p>
                 <p>
