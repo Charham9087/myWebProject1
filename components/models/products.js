@@ -14,6 +14,7 @@ const ProductsSchema = new mongoose.Schema(
         variantsImages: { type: [String] }, // ✅ fixed spelling here
         tags: { type: [String] },
         catalogues: { type: [String] },
+        shipping_price:{type: Number},
     },
     { collection: "Products", timestamps: true }
 );

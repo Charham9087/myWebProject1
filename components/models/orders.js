@@ -9,8 +9,9 @@ const OrdersSchema = new mongoose.Schema({
     postal: { type: String, required: true },
     comments: { type: String },
     total: { type: Number },
-    productID: [{ type: String }], // ✅ Correct type here
+    productID: [{ type: String }], 
     orderID: { type: String },
+    AdvanceAmount:{type:Number},
 }, {
     timestamps: true,
     collection: "Orders"
