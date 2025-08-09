@@ -25,11 +25,12 @@ export default function CheckoutPage() {
   const router = useRouter();
   const _id = searchParams.get("_id");
 
-  // calculate total
+  // ✅ Calculate total including shipping
   const total = productData.reduce((sum, item, index) => {
     const qty = quantity[index] > 0 ? quantity[index] : 1;
     const price = item?.discountedPrice || 0;
-    return sum + price * qty;
+    const shipping = item?.shipping_price || 0;
+    return sum + (price * qty) + shipping;
   }, 0);
 
   const [form, setForm] = useState({
@@ -61,7 +62,9 @@ export default function CheckoutPage() {
       const parsedCart = JSON.parse(cart);
       const ids = _id.split(",");
       const matchingItems = parsedCart.filter((item) => ids.includes(item.id));
-      const quantities = matchingItems.map((item) => item.quantity > 0 ? item.quantity : 1);
+      const quantities = matchingItems.map((item) =>
+        item.quantity > 0 ? item.quantity : 1
+      );
       setQuantity(quantities);
     }
   }, [_id]);
@@ -129,27 +132,29 @@ export default function CheckoutPage() {
             <CardTitle>Shipping Address</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            {["name", "address", "city", "postal", "email", "phone"].map((field) => (
-              <div key={field}>
-                <Label htmlFor={field}>
-                  {field === "postal"
-                    ? "Postal Code"
-                    : field.charAt(0).toUpperCase() + field.slice(1)}
-                </Label>
-                <Input
-                  id={field}
-                  placeholder={
-                    field === "phone"
-                      ? "03XXXXXXXXX"
-                      : field === "email"
-                      ? "you@example.com"
-                      : `Enter your ${field}`
-                  }
-                  value={form[field]}
-                  onChange={handleChange}
-                />
-              </div>
-            ))}
+            {["name", "address", "city", "postal", "email", "phone"].map(
+              (field) => (
+                <div key={field}>
+                  <Label htmlFor={field}>
+                    {field === "postal"
+                      ? "Postal Code"
+                      : field.charAt(0).toUpperCase() + field.slice(1)}
+                  </Label>
+                  <Input
+                    id={field}
+                    placeholder={
+                      field === "phone"
+                        ? "03XXXXXXXXX"
+                        : field === "email"
+                        ? "you@example.com"
+                        : `Enter your ${field}`
+                    }
+                    value={form[field]}
+                    onChange={handleChange}
+                  />
+                </div>
+              )
+            )}
           </CardContent>
         </Card>
 
@@ -195,11 +200,19 @@ export default function CheckoutPage() {
                   <div className="flex-1">
                     <p className="font-bold text-lg">{item.title}</p>
                     <p className="text-xs text-gray-500">
-                      Quantity: {(quantity[index] ?? 1)} × Rs {item.discountedPrice}
+                      Quantity: {(quantity[index] ?? 1)} × Rs{" "}
+                      {item.discountedPrice}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Shipping: Rs {item.shipping_price || 0}
                     </p>
                   </div>
                   <div className="text-sm font-semibold">
-                    Rs {(item.discountedPrice * (quantity[index] ?? 1)).toFixed(2)}
+                    Rs{" "}
+                    {(
+                      item.discountedPrice * (quantity[index] ?? 1) +
+                      (item.shipping_price || 0)
+                    ).toFixed(2)}
                   </div>
                 </div>
               ))

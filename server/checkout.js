@@ -1,63 +1,78 @@
-"use server"
+"use server";
+
 import ConnectDB from "@/components/mongoConnect";
-import orders from "@/components/models/orders";
+import Orders from "@/components/models/orders";
 import Products from "@/components/models/products";
 
-
-
+/**
+ * Save checkout order data to the database
+ */
 export async function saveCheckout(data) {
-    console.log("RECEIVED DATA FROM FRONTEND", data);
-    await ConnectDB();
-    console.log('connected to DB successfully')
+    try {
+        console.log("📦 RECEIVED DATA FROM FRONTEND:", data);
 
-    const {  name, email, phone, address, city, postal, comments, productID, orderID,total  } = data;
+        await ConnectDB();
+        console.log("✅ Connected to DB successfully");
 
-    const _id = productID.split(",")
-    
+        const { name, email, phone, address, city, postal, comments, productID, orderID, total } = data;
 
-    await orders.create({
-        name: name,
-        email: email,
-        phone: phone,
-        address: address,
-        city: city,
-        postal: postal,
-        comments: comments,
-        productID: _id,
-        orderID: orderID,
-        total: total,
-    })
-    console.log("data saved to DB successfully")
+        // Ensure product IDs are in array form
+        const productIdsArray = typeof productID === "string" ? productID.split(",") : productID;
 
+        await Orders.create({
+            name,
+            email,
+            phone,
+            address,
+            city,
+            postal,
+            comments,
+            productID: productIdsArray,
+            orderID,
+            total,
+        });
+
+        console.log("✅ Order saved to DB successfully");
+        return { success: true, message: "Order saved successfully" };
+
+    } catch (error) {
+        console.error("❌ Error saving order:", error);
+        return { success: false, message: "Failed to save order", error: error.message };
+    }
 }
 
+/**
+ * Get checkout product details by IDs
+ */
 export async function getCheckout(_id) {
-    console.log("RECEIVED DATA FROM FRONTEND", _id)
-    await ConnectDB();
-    console.log("connected to DB Successfully")
+    try {
+        console.log("🛒 RECEIVED PRODUCT IDS:", _id);
 
-    // Split in case _id comes as "id1,id2,id3"
-    const ids = _id.split(',');
+        await ConnectDB();
+        console.log("✅ Connected to DB successfully");
 
-    // Find products and convert to plain objects
-    const data = await Products.find({ _id: { $in: ids } }).lean();
+        // Ensure _id is always an array
+        const ids = typeof _id === "string" ? _id.split(",") : _id;
 
-    if (data) {
-        console.log('products found', data);
+        // Fetch products and convert ObjectId to string
+        const products = await Products.find({ _id: { $in: ids } }).lean();
 
-        // ✅ Convert _id from ObjectId to string
-        const plainData = data.map(item => ({
+        if (!products.length) {
+            console.log("⚠️ No products found in DB");
+            return [];
+        }
+
+        console.log("✅ Products found:", products.length);
+
+        const plainProducts = products.map(item => ({
             ...item,
             _id: item._id.toString()
         }));
 
-        return plainData;
-    } else {
-        console.log("data not found in DB");
+        return plainProducts;
+
+    } catch (error) {
+        console.error("❌ Error fetching products:", error);
         return [];
     }
 }
-
-
-
-
