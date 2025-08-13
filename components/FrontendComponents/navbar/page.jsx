@@ -34,7 +34,7 @@ export default function Navbar() {
   return (
     <nav className="bg-gray-950 sticky top-0 z-50 text-white px-4 py-3">
       <div className="flex justify-between items-center">
-        <Link href="/" className="text-xl font-semibold">A Store</Link>
+        <Link href="/" className="text-xl font-semibold">CH Store</Link>
 
         <button
           className="md:hidden text-xl focus:outline-none"

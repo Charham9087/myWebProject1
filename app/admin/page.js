@@ -4,7 +4,7 @@ import { DollarSign, ShoppingCart, Users, Package } from "lucide-react"
 export default function EcommerceDashboard() {
   return (
     <div className="p-4">
-      <h1 className="text-2xl md:text-3xl font-bold mb-6 tracking-tight text-gray-800 dark:text-white">🛒 A Store Dashboard</h1>
+      <h1 className="text-2xl md:text-3xl font-bold mb-6 tracking-tight text-gray-800 dark:text-white">🛒 CH Store Dashboard</h1>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>

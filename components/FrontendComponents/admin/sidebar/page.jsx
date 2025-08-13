@@ -61,7 +61,7 @@ const items = [
     icon: BellDot,
   },
    {
-    title: "A Store",
+    title: "CH Store",
     url: "/",
     icon: Store,
   }
@@ -71,7 +71,7 @@ export default function AppSidebar() {
     <Sidebar className="bg-black" open={true}> {/* ✅ Force open */}
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>A Store</SidebarGroupLabel>
+          <SidebarGroupLabel>CH Store</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (

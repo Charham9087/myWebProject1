@@ -85,7 +85,7 @@ export default function AddProductPage() {
   return (
     <div className="p-4 max-w-3xl mx-auto">
       <h1 className="text-2xl md:text-3xl font-bold mb-6 tracking-tight text-gray-800 dark:text-white">
-        🛍️ Add New Product - A Store
+        🛍️ Add New Product - CH Store
       </h1>
 
       {loading && (
@@ -96,7 +96,7 @@ export default function AddProductPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Add Product to A Store</CardTitle>
+          <CardTitle>Add Product to CH Store</CardTitle>
         </CardHeader>
         <CardContent>
           <form className="grid gap-6" onSubmit={handleSubmit(onSubmit)}>
