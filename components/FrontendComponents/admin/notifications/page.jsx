@@ -65,3 +65,7 @@ export default function AdminNotificationsPage({ initialQueries }) {
         </div>
     );
 }
+
+export const dynamic = "force-dynamic"; 
+// ensures page is rendered on server at runtime, not build
+
