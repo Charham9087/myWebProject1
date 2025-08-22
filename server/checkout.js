@@ -28,6 +28,8 @@ export async function saveCheckout(data) {
         orderID: orderID,
         total: total,
     })
+
+    helo 
     console.log("data saved to DB successfully")
 
 }
