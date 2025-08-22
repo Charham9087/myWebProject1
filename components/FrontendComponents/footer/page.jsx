@@ -8,9 +8,9 @@ export default function Footer() {
 
         {/* Brand Info */}
         <div>
-          <h5 className="text-lg font-semibold text-white">CH Store</h5>
-          <p className="mt-2">Affordable Tech Accessories</p>
-          <p>Deals You'll Love, Quality You Deserve.</p>
+          <h5 className="text-lg font-semibold text-white">Ghari Point</h5>
+          <p className="mt-2">⌚ Flex Different. Wear Authentic.</p>
+          <p>✨ Elite Watches. For Elite Souls.</p>
         </div>
 
         {/* Quick Links */}
@@ -38,7 +38,7 @@ export default function Footer() {
           <p>
             Email:
             <a href="mailto:astore3609@gmail.com" className="hover:text-white underline ml-1">
-              chstore3609@gmail.com
+              gharipoint@gmail.com
             </a>
           </p>
           <p>
@@ -49,8 +49,8 @@ export default function Footer() {
           </p>
 
           <div className="flex gap-4 mt-3 text-xl">
-            <a href="#" className="hover:text-white transition-colors"><FaFacebook /></a>
-            <a href="#" className="hover:text-white transition-colors"><FaInstagram /></a>
+            <a href="https://www.facebook.com/share/16wSjmMmpD/" target="_blank" className="hover:text-white transition-colors"><FaFacebook /></a>
+            <a href="https://www.instagram.com/gharipoint/?utm_source=ig_web_button_share_sheet" target="_blank" className="hover:text-white transition-colors"><FaInstagram /></a>
             <a href="https://wa.me/923304462277" className="hover:text-white transition-colors"><FaWhatsapp /></a>
           </div>
         </div>
@@ -58,7 +58,7 @@ export default function Footer() {
 
       <hr className="border-gray-700 my-4" />
       <p className="text-center text-sm text-gray-500">
-        &copy; {new Date().getFullYear()} CH Store. All rights reserved.
+        &copy; {new Date().getFullYear()} Ghari Point. All rights reserved.
       </p>
     </footer>
   );

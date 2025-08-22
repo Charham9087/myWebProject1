@@ -5,7 +5,7 @@ export default function Carousel() {
   const slides = [
     {
       src: "/images/banner1.jpg",
-      title: "CH Store",
+      title: "Ghari Point",
       description: "Deals You'll Love, Quality You Deserve.",
     },
     {
@@ -82,7 +82,7 @@ export default function Carousel() {
 
       </div>
           <br/>
-          <h3 className="text-center text-3xl font-bold text-gray-600">CH Store</h3>
+          <h3 className="text-center text-3xl font-bold text-gray-600">Ghari Point</h3>
       <br />
 
       <p className="text-center text-gray-600 text-xs md:text-sm ">Deals You'll Love, Quality You Deserve.</p>

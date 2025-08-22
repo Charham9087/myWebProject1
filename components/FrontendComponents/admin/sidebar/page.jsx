@@ -71,7 +71,7 @@ export default function AppSidebar() {
     <Sidebar className="bg-black" open={true}> {/* ✅ Force open */}
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>CH Store</SidebarGroupLabel>
+          <SidebarGroupLabel>Ghari Point</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
