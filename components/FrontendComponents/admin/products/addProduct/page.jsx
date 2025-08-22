@@ -54,12 +54,14 @@ export default function AddProductPage() {
 
     // Upload product images
     const urls = [];
-    for (let file of data.files) {
-      const res = await edgestore.publicFiles.upload({
-        file,
-        onProgressChange: (progress) => console.log("Uploading image", progress)
-      });
-      urls.push(res.url);
+    if (data.files && data.files.length > 0) {
+      for (let file of data.files) {
+        const res = await edgestore.publicFiles.upload({
+          file,
+          onProgressChange: (progress) => console.log("Uploading image", progress)
+        });
+        urls.push(res.url);
+      }
     }
     data.urls = urls;
 
@@ -73,13 +75,18 @@ export default function AddProductPage() {
     }
     data.variantUrls = variantUrls;
 
+    // clear temp fields
     data.files = [];
     data.variants = [];
 
     console.log("Final data to save:", data);
     await SaveProduct(data);
+
     setdone("done");
     setloading(false);
+
+    // ✅ Navigate only after successful save
+    router.push("/admin/products");
   }
 
   return (
@@ -116,7 +123,8 @@ export default function AddProductPage() {
                 <Input type="number" placeholder="Rs.800" {...register("discountedPrice", { required: true })} />
               </div>
             </div>
-            {/* dhipping details  */}
+
+            {/* Shipping Price */}
             <div className="grid gap-2">
               <Label>Shipping Price</Label>
               <Input
@@ -124,13 +132,6 @@ export default function AddProductPage() {
                 placeholder="Rs.150"
                 {...register("shipping_price", { required: true })}
               />
-            </div>
-
-
-            {/* Shipping Price */}
-            <div className="grid gap-2">
-              <Label>Shipping Price</Label>
-              <Input type="number" placeholder="Rs.200" {...register("shipping_price", { required: true })} />
             </div>
 
             {/* Categories multi-select */}
@@ -244,11 +245,7 @@ export default function AddProductPage() {
               </Button>
             </div>
 
-            <Button type="submit" onClick={() => {
-           
-                router.push("/admin/products");
-              
-            }}>
+            <Button type="submit">
               Add Product
             </Button>
           </form>

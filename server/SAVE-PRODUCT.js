@@ -9,7 +9,7 @@ export default async function SaveProduct(data) {
     console.log("RECEIVED DATA FROM FRONTEND", data);
     console.log("RECEIVED DATA FROM FRONTEND", data);
 
-    const { name, tags, originalPrice, discountedPrice, title, quantity, description, paymentMethod, categories, urls,catalogues,variantUrls  } = data;
+    const { shipping_price,name, tags, originalPrice, discountedPrice, title, quantity, description, paymentMethod, categories, urls,catalogues,variantUrls  } = data;
 
     // Save to database
     await products.create({
