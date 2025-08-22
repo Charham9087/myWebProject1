@@ -1,63 +1,24 @@
 import { NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
 
+export async function middleware(req) {
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
-export default async function middleware(request) {
-
-
-    const forbidden_html = `<html><body>403 Not allowed</body></html>`;
-
-
-    try {
-
-        // SEND COOKIES TO API ROUTE FOR VERIFICATION:
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/verify-admin`,{
-            method: "GET",
-            headers:{
-                "Content-Type":"application/json",
-                 "cookie":request.headers.get('cookie') || ""
-            }
-        });
-        if(!res.ok){
-            throw new Error("RECEIEVD BAD RESPONSE FROM API, NOT ALLOWED!")
-        }
-
-        const {email}= await res.json();
-
-        console.log(`Admin access granted to ${email} at UNIX time : ${Date.now()}`);
-
-        return NextResponse.next();
-
-
-
-
-
+  // Protect admin routes
+  if (req.nextUrl.pathname.startsWith("/admin")) {
+    if (!token || token.role !== "admin") {
+      return new NextResponse("<h1>403 Not allowed</h1>", {
+        status: 403,
+        headers: { "Content-Type": "text/html" },
+      });
     }
 
-    catch (err) {
+    console.log(`✅ Admin access granted to ${token.email} at UNIX time: ${Date.now()}`);
+  }
 
-
-        console.log("FAILED TO ALLOW ADMIN ACCESS AT MIDDLEWARE! logs:",err.message);
-
-
-
-        return new NextResponse(forbidden_html, {
-            status: 403,
-            headers: {
-                "Content-Type": "text/html"
-            }
-
-        });
-    }
-
-
-
-
-
-
-
+  return NextResponse.next();
 }
-
 
 export const config = {
-    matcher: ['/admin/:path*']
-}
+  matcher: ["/admin/:path*"],
+};
