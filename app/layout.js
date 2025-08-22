@@ -10,7 +10,7 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata = {
-  title: "Web Project - by Ch Arham",
+  title: "Ghari Point - Flex Different. Wear Authentic.",
   description: "Created by Ch Arham",
 };
 
