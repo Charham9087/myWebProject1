@@ -89,7 +89,7 @@ export default function ProductsGridPage({ GetCatalogueWithProducts }) {
                   />
                   <div className="p-3 flex flex-col flex-grow">
                     <h3 className="text-sm sm:text-base font-semibold text-gray-800">
-                      {product.name}
+                      {product.title}
                     </h3>
                     <p className="text-green-600 text-xs sm:text-sm font-bold">
                       Rs. {product.discountedPrice}
