@@ -106,7 +106,7 @@ export default function SimpleCart() {
                 onClick={(e) => e.stopPropagation()}
               />
               <div className="flex-1">
-                <h3 className="font-semibold">{item.name}</h3>
+                <h3 className="font-semibold">{item.title}</h3>
                 <p className="text-gray-600 text-sm" data-limit="20">{item.description}</p>
 
                 <div className="flex gap-2 mt-2 items-center">

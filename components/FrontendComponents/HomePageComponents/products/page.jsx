@@ -11,9 +11,9 @@ export default function ProductsGridPage() {
     const [products, setProducts] = useState([]);
     const [cartItems, setcartItems] = useState([]);
     const router = useRouter();
-    const {data:session} = useSession();
-    console.log("SESSION INFO:",session)
-    
+    const { data: session } = useSession();
+    console.log("SESSION INFO:", session)
+
     // Load existing cart from localStorage on mount
     useEffect(() => {
         const existingCart = JSON.parse(localStorage.getItem('cartItems')) || [];
@@ -87,19 +87,25 @@ export default function ProductsGridPage() {
                     >
                         <img
                             src={product.images?.[0] || "https://via.placeholder.com/300x200"}
-                            alt={product.name}
+                            alt={product.title} // 👈 name hata ke sirf title rakha
                             className="w-full h-36 sm:h-40 md:h-44 object-cover"
                         />
                         <div className="p-3 flex flex-col flex-grow">
-                            <h2 className="text-sm sm:text-base font-semibold text-gray-800">{product.name}</h2>
-                            <p className="text-green-600 text-xs sm:text-sm font-bold">Rs. {product.discountedPrice}</p>
-                            <p className="line-through text-gray-400 text-xs">Rs. {product.originalPrice}</p>
-                            <p className="text-gray-500 text-xs sm:text-sm line-clamp-2 flex-grow">{product.title}</p>
+                            <h2 className="text-sm sm:text-base font-semibold text-gray-800">
+                                {product.title}
+                            </h2>
+                            <p className="text-green-600 text-xs sm:text-sm font-bold">
+                                Rs. {product.discountedPrice}
+                            </p>
+                            <p className="line-through text-gray-400 text-xs">
+                                Rs. {product.originalPrice}
+                            </p>
 
                             <div className="flex gap-2 mt-2">
                                 <Button
                                     className="flex-1 bg-blue-600 text-white hover:bg-blue-700 text-xs sm:text-sm"
-                                    onClick={(e) => { e.stopPropagation(); /* your Buy action */ 
+                                    onClick={(e) => {
+                                        e.stopPropagation(); /* your Buy action */
                                         router.push(`/checkoutPage?_id=${product._id}`)
                                     }}
                                 >
