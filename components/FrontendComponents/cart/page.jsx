@@ -75,6 +75,15 @@ export default function SimpleCart() {
 
     router.push(`/checkoutPage?_id=${idsParam}&quantity=${qtyParam}`);
   };
+  // helper function to limit words
+  const limitWords = (text, limit) => {
+    if (!text) return "";
+    const words = text.split(" ");
+    return words.length > limit
+      ? words.slice(0, limit).join(" ") + "..."
+      : text;
+  };
+
 
   return (
     <div className="max-w-4xl mx-auto p-4">
@@ -107,8 +116,9 @@ export default function SimpleCart() {
               />
               <div className="flex-1">
                 <h3 className="font-semibold">{item.title}</h3>
-                <p className="text-gray-600 text-sm" data-limit="20">{item.description}</p>
-
+                <p className="text-gray-600 text-sm">
+                  {limitWords(item.description, 20)}
+                </p>
                 <div className="flex gap-2 mt-2 items-center">
                   <span className="text-gray-400 line-through">
                     Rs.{item.originalPrice}
