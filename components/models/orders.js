@@ -12,6 +12,9 @@ const OrdersSchema = new mongoose.Schema({
     productID: [{ type: String }], 
     orderID: { type: String },
     AdvanceAmount:{type:Number , default:0},
+    isShipped:{type:Boolean , default:false},
+    isVerified:{type:Boolean , default:false},
+    isCancelled:{type:Boolean , default:false},
 }, {
     timestamps: true,
     collection: "Orders"

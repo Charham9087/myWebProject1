@@ -80,7 +80,6 @@ export default function ProductsGridPage({ GetCatalogueWithProducts }) {
       <h1 className="text-xl text-center sm:text-2xl md:text-3xl font-bold mb-4">
         🛒 Explore Our Catalogues
       </h1>
-
       {/* 🔄 Transparent overlay loader */}
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 z-10 rounded-lg">
