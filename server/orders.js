@@ -92,21 +92,21 @@ export async function UpdateAdvanceAmount(orderID, advanceAmount,total) {
 
 
 export async function ToggleVerify(orderID, value) {
-  await dbConnect();
+  await ConnectDB();
   await Orders.updateOne({ orderID }, { isVerified: value });
 }
 
 export async function ToggleShipped(orderID, value) {
-  await dbConnect();
+  await ConnectDB();
   await Orders.updateOne({ orderID }, { isShipped: value });
 }
 
 export async function CancelOrder(orderID) {
-  await dbConnect();
+  await ConnectDB();
   await Orders.updateOne({ orderID }, { isCancelled: true });
 }
 
 export async function RestoreOrder(orderID) {
-  await dbConnect();
+  await ConnectDB();
   await Orders.updateOne({ orderID }, { isCancelled: false });
 }
