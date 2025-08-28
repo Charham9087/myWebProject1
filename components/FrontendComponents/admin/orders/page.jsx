@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { BadgeCheck, XCircle, Eye, Truck, User2, Pencil, Save, Loader2 } from "lucide-react"; // 👈 Loader2 added
+import { BadgeCheck, XCircle, Eye, Truck, User2, Pencil, Save, Loader2 } from "lucide-react";
 import { 
   ShowOrderPageData, 
   UpdateAdvanceAmount, 
@@ -19,11 +19,7 @@ import { useRouter } from "next/navigation";
 
 function ConfirmModal({ message, onConfirm, onCancel }) {
   return (
-    <div
-      className="fixed inset-0 bg-black/20 flex items-center justify-center z-50 pointer-events-auto"
-      role="dialog"
-      aria-modal="true"
-    >
+    <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50 pointer-events-auto" role="dialog" aria-modal="true">
       <div className="bg-white p-6 rounded shadow-lg max-w-sm w-full">
         <p className="mb-4" dangerouslySetInnerHTML={{ __html: message }} />
         <div className="flex justify-end gap-2">
@@ -40,7 +36,7 @@ export default function AdminOrdersPage() {
   const [editingAdvanceId, setEditingAdvanceId] = useState(null);
   const [confirmData, setConfirmData] = useState(null);
   const [notification, setNotification] = useState(null);
-  const [loading, setLoading] = useState(true); // ✅ Loading state
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -49,14 +45,14 @@ export default function AdminOrdersPage() {
 
   async function fetchOrders() {
     try {
-      setLoading(true); // ✅ Start loading
+      setLoading(true);
       const ordersData = await ShowOrderPageData();
       setOrders(ordersData);
     } catch (error) {
       console.error("Failed to fetch orders:", error);
       setNotification({ type: 'error', message: 'Failed to load orders.' });
     } finally {
-      setLoading(false); // ✅ Stop loading
+      setLoading(false);
     }
   }
 
@@ -84,12 +80,10 @@ export default function AdminOrdersPage() {
       if (!confirmed) return;
 
       const remaining = (order.total ?? 0) - (order.AdvanceAmount ?? 0);
-
       await UpdateAdvanceAmount(id, order.AdvanceAmount, remaining);
 
       await fetchOrders();
       setEditingAdvanceId(null);
-
       setNotification({ type: "success", message: `Advance amount updated for order ${id}` });
     } catch (err) {
       console.error(err);
@@ -118,52 +112,89 @@ export default function AdminOrdersPage() {
     )
   );
 
-  // ✅ Verify
+  // ✅ Verify (Optimistic UI)
   const toggleVerify = async (id) => {
+    const order = orders.find(o => o.orderID === id);
+    if (!order) return;
+
+    // Optimistic update
+    setOrders(prev => prev.map(o =>
+      o.orderID === id ? { ...o, isVerified: !o.isVerified } : o
+    ));
+
     try {
-      const order = orders.find(o => o.orderID === id);
       await ToggleVerify(id, !order.isVerified);
-      await fetchOrders();
       setNotification({ type: "success", message: `Order ${id} ${!order.isVerified ? "verified" : "unverified"}.` });
     } catch (err) {
+      // rollback if fail
+      setOrders(prev => prev.map(o =>
+        o.orderID === id ? { ...o, isVerified: order.isVerified } : o
+      ));
       console.error(err);
       setNotification({ type: "error", message: "Failed to update verification." });
     }
   };
 
-  // ✅ Shipped
+  // ✅ Shipped (Optimistic UI)
   const toggleShipped = async (id) => {
+    const order = orders.find(o => o.orderID === id);
+    if (!order) return;
+
+    setOrders(prev => prev.map(o =>
+      o.orderID === id ? { ...o, isShipped: !o.isShipped } : o
+    ));
+
     try {
-      const order = orders.find(o => o.orderID === id);
       await ToggleShipped(id, !order.isShipped);
-      await fetchOrders();
       setNotification({ type: "success", message: `Order ${id} ${!order.isShipped ? "shipped" : "set to pending"}.` });
     } catch (err) {
+      setOrders(prev => prev.map(o =>
+        o.orderID === id ? { ...o, isShipped: order.isShipped } : o
+      ));
       console.error(err);
       setNotification({ type: "error", message: "Failed to update shipment." });
     }
   };
 
-  // ✅ Cancel
+  // ✅ Cancel (Optimistic UI)
   const cancelOrder = async (id) => {
+    const order = orders.find(o => o.orderID === id);
+    if (!order) return;
+
+    if (!window.confirm("❌ Are you sure you want to cancel this order?")) return;
+
+    setOrders(prev => prev.map(o =>
+      o.orderID === id ? { ...o, isCancelled: true } : o
+    ));
+
     try {
-      if (!window.confirm("❌ Are you sure you want to cancel this order?")) return;
       await CancelOrder(id);
-      await fetchOrders();
       setNotification({ type: "success", message: `Order ${id} cancelled.` });
     } catch (err) {
+      setOrders(prev => prev.map(o =>
+        o.orderID === id ? { ...o, isCancelled: order.isCancelled } : o
+      ));
       console.error(err);
       setNotification({ type: "error", message: "Failed to cancel order." });
     }
   };
 
-  // ✅ Restore
+  // ✅ Restore (Optimistic UI)
   const restoreOrder = async (id) => {
+    const order = orders.find(o => o.orderID === id);
+    if (!order) return;
+
+    setOrders(prev => prev.map(o =>
+      o.orderID === id ? { ...o, isCancelled: false } : o
+    ));
+
     try {
       await RestoreOrder(id);
-      await fetchOrders();
       setNotification({ type: "success", message: `Order ${id} restored.` });
     } catch (err) {
+      setOrders(prev => prev.map(o =>
+        o.orderID === id ? { ...o, isCancelled: order.isCancelled } : o
+      ));
       console.error(err);
       setNotification({ type: "error", message: "Failed to restore order." });
     }
@@ -181,7 +212,6 @@ export default function AdminOrdersPage() {
 
       {notification && <Notification />}
 
-      {/* ✅ Loading Indicator */}
       {loading ? (
         <div className="flex justify-center items-center py-20">
           <Loader2 className="animate-spin w-8 h-8 text-blue-600" />
