@@ -85,6 +85,9 @@ export default function ProductsGridPage() {
             {loading && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 z-10 rounded-lg">
                     <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <p>
+                        <span className="sr-only">Loading...</span>
+                    </p>
                 </div>
             )}
 
