@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 export default function ProductsGridPage({ GetCatalogueWithProducts }) {
   const [catalogueData, setCatalogueData] = useState([]);
   const [cartItems, setCartItems] = useState([]);
-  const [loading, setLoading] = useState(false); // 🔄 loader for redirection
+  const [loading, setLoading] = useState(true); // ✅ by default true, page load pe loader dikhega
   const router = useRouter();
 
   // Load cart from localStorage
@@ -20,8 +20,13 @@ export default function ProductsGridPage({ GetCatalogueWithProducts }) {
   // Fetch grouped catalogue with products
   useEffect(() => {
     async function fetchData() {
-      const data = await GetCatalogueWithProducts();
-      setCatalogueData(data);
+      try {
+        setLoading(true); // ✅ fetch start par loader
+        const data = await GetCatalogueWithProducts();
+        setCatalogueData(data);
+      } finally {
+        setTimeout(() => setLoading(false), 800); // ✅ thoda delay ke sath loader hide
+      }
     }
     fetchData();
   }, []);
@@ -67,7 +72,7 @@ export default function ProductsGridPage({ GetCatalogueWithProducts }) {
     setLoading(true); // show overlay loader
     setTimeout(() => {
       router.push(`/viewDetails?_id=${id}`);
-    }, 800); // thoda delay for loader visibility
+    }, 800); // delay for loader visibility
   };
 
   return (
@@ -78,8 +83,11 @@ export default function ProductsGridPage({ GetCatalogueWithProducts }) {
 
       {/* 🔄 Transparent overlay loader */}
       {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 z-10 rounded-lg">
-          <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+          <div className="bg-white p-6 rounded-2xl shadow-lg flex flex-col items-center">
+            <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-3"></div>
+            <p className="text-gray-700 font-medium">Loading...</p>
+          </div>
         </div>
       )}
 
@@ -101,7 +109,8 @@ export default function ProductsGridPage({ GetCatalogueWithProducts }) {
                   >
                     <img
                       src={
-                        product.images?.[0] || "https://via.placeholder.com/300x200"
+                        product.images?.[0] ||
+                        "https://via.placeholder.com/300x200"
                       }
                       alt={product.name}
                       className="w-full h-36 sm:h-40 md:h-44 object-cover"
