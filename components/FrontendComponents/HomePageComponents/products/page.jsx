@@ -6,44 +6,47 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
-
 export default function ProductsGridPage() {
     const [products, setProducts] = useState([]);
     const [cartItems, setcartItems] = useState([]);
+    const [loading, setLoading] = useState(true);
     const router = useRouter();
     const { data: session } = useSession();
-    console.log("SESSION INFO:", session)
 
-    // Load existing cart from localStorage on mount
+    // Load existing cart
     useEffect(() => {
-        const existingCart = JSON.parse(localStorage.getItem('cartItems')) || [];
+        const existingCart = JSON.parse(localStorage.getItem("cartItems")) || [];
         setcartItems(existingCart);
     }, []);
 
-    // Fetch products from API
+    // Fetch products
     useEffect(() => {
         async function fetchProducts() {
-            const res = await fetch('/api/Frontend/homepage');
-            const data = await res.json();
-            console.log(data);
-            setProducts(data);
+            try {
+                setLoading(true);
+                const res = await fetch("/api/Frontend/homepage");
+                const data = await res.json();
+                setProducts(data);
+            } catch (error) {
+                console.error("Error fetching products:", error);
+            } finally {
+                setLoading(false);
+            }
         }
         fetchProducts();
     }, []);
 
     const handleViewDetails = (_id) => {
-        router.push(`/viewDetails?_id=${_id}`)
+        router.push(`/viewDetails?_id=${_id}`);
+    };
 
-    }
-
-    // Add to cart handler
     const handleAddToCart = (product) => {
-        const existingCart = JSON.parse(localStorage.getItem('cartItems')) || [];
-        const existingItem = existingCart.find(item => item._id === product._id);
+        const existingCart = JSON.parse(localStorage.getItem("cartItems")) || [];
+        const existingItem = existingCart.find((item) => item._id === product._id);
 
         let updatedCart;
         if (existingItem) {
-            updatedCart = existingCart.map(item =>
+            updatedCart = existingCart.map((item) =>
                 item._id === product._id
                     ? { ...item, quantity: item.quantity + 1 }
                     : item
@@ -57,28 +60,35 @@ export default function ProductsGridPage() {
                     originalPrice: product.originalPrice,
                     images: product.images,
                     _id: product._id,
-                    id: product._id, // 👈 keep id for deletion
+                    id: product._id,
                     title: product.title,
                     categories: product.categories,
                     description: product.description,
                     quantity: 1,
-                    catalogues: product.catalogues
-                }
+                    catalogues: product.catalogues,
+                },
             ];
         }
 
-        setcartItems(updatedCart); // update local state
-        localStorage.setItem('cartItems', JSON.stringify(updatedCart)); // save to storage
-        toast.success('Added to cart successfully', { position: 'top-center' });
+        setcartItems(updatedCart);
+        localStorage.setItem("cartItems", JSON.stringify(updatedCart));
+        toast.success("Added to cart successfully", { position: "top-center" });
     };
 
     return (
-        <div className="max-w-7xl mx-auto p-4">
+        <div className="relative max-w-7xl mx-auto p-4">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4">
                 🛒 Explore Our Products
             </h1>
 
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {/* ✅ Loader Overlay (sirf grid pe) */}
+            {loading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 z-10 rounded-lg">
+                    <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+                </div>
+            )}
+
+            <div className="relative grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 {products.map((product) => (
                     <div
                         key={product._id}
@@ -87,7 +97,7 @@ export default function ProductsGridPage() {
                     >
                         <img
                             src={product.images?.[0] || "https://via.placeholder.com/300x200"}
-                            alt={product.title} // 👈 name hata ke sirf title rakha
+                            alt={product.title}
                             className="w-full h-36 sm:h-40 md:h-44 object-cover"
                         />
                         <div className="p-3 flex flex-col flex-grow">
@@ -105,15 +115,18 @@ export default function ProductsGridPage() {
                                 <Button
                                     className="flex-1 bg-blue-600 text-white hover:bg-blue-700 text-xs sm:text-sm"
                                     onClick={(e) => {
-                                        e.stopPropagation(); /* your Buy action */
-                                        router.push(`/checkoutPage?_id=${product._id}`)
+                                        e.stopPropagation();
+                                        router.push(`/checkoutPage?_id=${product._id}`);
                                     }}
                                 >
                                     Buy
                                 </Button>
                                 <Button
                                     className="flex-1 bg-gray-200 text-gray-800 hover:bg-gray-300 text-xs sm:text-sm"
-                                    onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleAddToCart(product);
+                                    }}
                                 >
                                     Add To Cart
                                 </Button>
@@ -121,13 +134,15 @@ export default function ProductsGridPage() {
 
                             <Button
                                 className="mt-2 w-full bg-gray-100 text-gray-800 hover:bg-gray-200 text-xs sm:text-sm"
-                                onClick={(e) => { e.stopPropagation(); handleViewDetails(product._id); }}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleViewDetails(product._id);
+                                }}
                             >
                                 View Details
                             </Button>
                         </div>
                     </div>
-
                 ))}
             </div>
         </div>
