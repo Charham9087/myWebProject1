@@ -83,11 +83,11 @@ export default function ProductsGridPage({ GetCatalogueWithProducts }) {
 
       {/* 🔄 Transparent overlay loader */}
       {loading && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white p-6 rounded-2xl shadow-lg flex flex-col items-center">
-            <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-3"></div>
-            <p className="text-gray-700 font-medium">Loading...</p>
-          </div>
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 z-10 rounded-lg">
+          <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+          <p>
+            <span className="sr-only">Loading...</span>
+          </p>
         </div>
       )}
 
