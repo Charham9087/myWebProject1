@@ -114,11 +114,10 @@ export default function ProductsGridPage() {
                             <p className="line-through text-gray-400 text-xs">
                                 Rs. {product.originalPrice}
                             </p>
-
                             {/* ✅ Buttons wrapper responsive */}
-                            <div className="flex flex-col sm:flex-row gap-2 mt-2">
+                            <div className="flex flex-col sm:flex-row sm:justify-between gap-2 mt-2 w-full">
                                 <Button
-                                    className="w-full sm:flex-1 bg-blue-600 text-white hover:bg-blue-700 text-xs sm:text-sm"
+                                    className="flex-1 bg-blue-600 text-white hover:bg-blue-700 text-xs sm:text-sm"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         router.push(`/checkoutPage?_id=${product._id}`);
@@ -127,7 +126,7 @@ export default function ProductsGridPage() {
                                     Buy Now
                                 </Button>
                                 <Button
-                                    className="w-full sm:flex-1 bg-gray-200 text-gray-800 hover:bg-gray-300 text-xs sm:text-sm"
+                                    className="flex-1 bg-gray-200 text-gray-800 hover:bg-gray-300 text-xs sm:text-sm"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         handleAddToCart(product);
@@ -146,6 +145,7 @@ export default function ProductsGridPage() {
                             >
                                 View Details
                             </Button>
+
                         </div>
                     </div>
                 ))}
