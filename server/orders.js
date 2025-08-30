@@ -89,24 +89,26 @@ export async function UpdateAdvanceAmount(orderID, advanceAmount,total) {
     throw new Error("Failed to update advance amount");
   }
 }
-
-
 export async function ToggleVerify(orderID, value) {
   await ConnectDB();
-  await Orders.updateOne({ orderID }, { isVerified: value });
+  const objectId = new mongoose.Types.ObjectId(orderID);
+  await Orders.updateOne({ _id: objectId }, { $set: { isVerified: value } });
 }
 
 export async function ToggleShipped(orderID, value) {
   await ConnectDB();
-  await Orders.updateOne({ orderID }, { isShipped: value });
+  const objectId = new mongoose.Types.ObjectId(orderID);
+  await Orders.updateOne({ _id: objectId }, { $set: { isShipped: value } });
 }
 
 export async function CancelOrder(orderID) {
   await ConnectDB();
-  await Orders.updateOne({ orderID }, { isCancelled: true });
+  const objectId = new mongoose.Types.ObjectId(orderID);
+  await Orders.updateOne({ _id: objectId }, { $set: { isCancelled: true } });
 }
 
 export async function RestoreOrder(orderID) {
   await ConnectDB();
-  await Orders.updateOne({ orderID }, { isCancelled: false });
+  const objectId = new mongoose.Types.ObjectId(orderID);
+  await Orders.updateOne({ _id: objectId }, { $set: { isCancelled: false } });
 }
