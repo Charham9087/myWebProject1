@@ -91,7 +91,8 @@ export default function ProductsGridPage() {
                 </div>
             )}
 
-            <div className="relative grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {/* ✅ Responsive grid */}
+            <div className="relative grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                 {products.map((product) => (
                     <div
                         key={product._id}
@@ -114,18 +115,19 @@ export default function ProductsGridPage() {
                                 Rs. {product.originalPrice}
                             </p>
 
-                            <div className="flex gap-2 mt-2">
+                            {/* ✅ Buttons wrapper responsive */}
+                            <div className="flex flex-col sm:flex-row gap-2 mt-2">
                                 <Button
-                                    className="flex-1 bg-blue-600 text-white hover:bg-blue-700 text-xs sm:text-sm"
+                                    className="w-full sm:flex-1 bg-blue-600 text-white hover:bg-blue-700 text-xs sm:text-sm"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         router.push(`/checkoutPage?_id=${product._id}`);
                                     }}
                                 >
-                                    Buy
+                                    Buy Now
                                 </Button>
                                 <Button
-                                    className="flex-1 bg-gray-200 text-gray-800 hover:bg-gray-300 text-xs sm:text-sm"
+                                    className="w-full sm:flex-1 bg-gray-200 text-gray-800 hover:bg-gray-300 text-xs sm:text-sm"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         handleAddToCart(product);

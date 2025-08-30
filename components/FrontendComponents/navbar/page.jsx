@@ -34,22 +34,25 @@ export default function Navbar() {
   return (
     <nav className="bg-gray-950 sticky top-0 z-50 text-white px-4 py-3">
       <div className="flex justify-between items-center">
-        <Link href="/" className="text-xl font-semibold">Ghari Point</Link>
 
-        <button
-          className="md:hidden text-xl focus:outline-none"
-          onClick={() => setMenuOpen(!menuOpen)}
-        >
-          {menuOpen ? <FaTimes /> : <FaBars />}
-        </button>
+        {/* ✅ Left side: Hamburger + Logo */}
+        <div className="flex items-center gap-3">
+          <button
+            className="md:hidden text-xl focus:outline-none"
+            onClick={() => setMenuOpen(!menuOpen)}
+          >
+            {menuOpen ? <FaTimes /> : <FaBars />}
+          </button>
+          <Link href="/" className="text-xl font-semibold">Ghari Point</Link>
+        </div>
 
+        {/* ✅ Right side: Desktop Menu */}
         <div className="hidden md:flex items-center gap-4 relative">
           <Link href="/cart"><FaShoppingCart /></Link>
           <Link href="/">Home</Link>
           <Link href="/about">About</Link>
           <Link href="/contact">Contact</Link>
           <Link href="/catalogue">Catalogues</Link>
-       
 
           {status === "authenticated" ? (
             <>
@@ -90,34 +93,33 @@ export default function Navbar() {
             <Link href="/login">Login</Link>
           )}
         </div>
+      </div>
 
-        {/* Mobile menu */}
-        <div
-          className={`flex flex-col md:hidden overflow-hidden transition-[max-height] duration-300 ${
-            menuOpen ? 'max-h-96 mt-2' : 'max-h-0'
+      {/* ✅ Mobile menu */}
+      <div
+        className={`flex flex-col md:hidden overflow-hidden transition-[max-height] duration-300 ${menuOpen ? "max-h-96 mt-2" : "max-h-0"
           }`}
-        >
-          <Link href="/cart" className="flex items-center gap-2 py-2 border-b border-gray-800">
-            <FaShoppingCart /> Cart
-          </Link>
-          <Link href="/" className="py-2 border-b border-gray-800">Home</Link>
-      
-          <Link href="/about" className="py-2 border-b border-gray-800">About</Link>
-          <Link href="/contact" className="py-2 border-b border-gray-800">Contact</Link>
-          <Link href="/catalogue" className="py-2 border-b border-gray-800">Catalogues</Link>
+      >
+        <Link href="/cart" className="flex items-center gap-2 py-2 border-b border-gray-800">
+          <FaShoppingCart /> Cart
+        </Link>
+        <Link href="/" className="py-2 border-b border-gray-800">Home</Link>
+        <Link href="/about" className="py-2 border-b border-gray-800">About</Link>
+        <Link href="/contact" className="py-2 border-b border-gray-800">Contact</Link>
+        <Link href="/catalogue" className="py-2 border-b border-gray-800">Catalogues</Link>
 
-          {status === "authenticated" ? (
-            <button
-              onClick={() => setShowPopup(!showPopup)}
-              className="py-2 border-b border-gray-800 flex items-center gap-2"
-            >
-              <FaUser /> Account
-            </button>
-          ) : (
-            <Link href="/login" className="py-2 border-b border-gray-800">Login</Link>
-          )}
-        </div>
+        {status === "authenticated" ? (
+          <button
+            onClick={() => setShowPopup(!showPopup)}
+            className="py-2 border-b border-gray-800 flex items-center gap-2"
+          >
+            <FaUser /> Account
+          </button>
+        ) : (
+          <Link href="/login" className="py-2 border-b border-gray-800">Login</Link>
+        )}
       </div>
     </nav>
+
   );
 }

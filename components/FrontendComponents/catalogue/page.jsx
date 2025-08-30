@@ -80,6 +80,7 @@ export default function ProductsGridPage({ GetCatalogueWithProducts }) {
       <h1 className="text-xl text-center sm:text-2xl md:text-3xl font-bold mb-4">
         🛒 Explore Our Catalogues
       </h1>
+
       {/* 🔄 Transparent overlay loader */}
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 z-10 rounded-lg">
@@ -99,7 +100,8 @@ export default function ProductsGridPage({ GetCatalogueWithProducts }) {
                 {cat.name}
               </h2>
 
-              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {/* ✅ Responsive grid improved */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                 {cat.products.map((product) => (
                   <div
                     key={product._id}
@@ -114,6 +116,7 @@ export default function ProductsGridPage({ GetCatalogueWithProducts }) {
                       alt={product.name}
                       className="w-full h-36 sm:h-40 md:h-44 object-cover"
                     />
+
                     <div className="p-3 flex flex-col flex-grow">
                       <h3 className="text-sm sm:text-base font-semibold text-gray-800">
                         {product.title}
@@ -128,7 +131,8 @@ export default function ProductsGridPage({ GetCatalogueWithProducts }) {
                         {product.title}
                       </p>
 
-                      <div className="flex gap-2 mt-2">
+                      {/* ✅ Buttons responsive */}
+                      <div className="flex flex-col sm:flex-row gap-2 mt-2">
                         <Button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -166,5 +170,6 @@ export default function ProductsGridPage({ GetCatalogueWithProducts }) {
           )
       )}
     </div>
+
   );
 }
