@@ -63,7 +63,7 @@ export async function saveCheckout(data) {
         <h2 style="font-size:20px; margin-bottom:10px; color:#333;">Order Confirmation</h2>
         <p style="font-size:14px; color:#555;">
           Hi <strong>${name}</strong>,<br><br>
-          Thank you for shopping with <strong>Ghari Point</strong>. We’ve received your order <b>#${orderID}</b> and it’s now being processed.
+          Thank you for shopping with <strong>Ghari Point</strong>. We’ve received your order and it’s now being processed.
         </p>
 
         <div style="margin:20px 0; padding:15px; background:#f3f3f3; border-radius:6px;">
