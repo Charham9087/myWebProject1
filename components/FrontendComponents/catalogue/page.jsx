@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { GetCatalogueWithProducts,SaveCatalogue, showCatalogue } from "@/server/catalogue-functions";
 
-export default function ProductsGridPage({ GetCatalogueWithProducts }) {
+export default function ProductsGridPage() {
   const [catalogueData, setCatalogueData] = useState([]);
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true); // ✅ by default true, page load pe loader dikhega
