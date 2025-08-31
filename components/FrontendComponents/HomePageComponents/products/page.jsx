@@ -91,8 +91,8 @@ export default function ProductsGridPage() {
                 </div>
             )}
 
-            {/* ✅ Responsive grid */}
-            <div className="relative grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            {/* ✅ Responsive grid (fixed for laptops = 4 columns) */}
+            <div className="relative grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-6 gap-4">
                 {products.map((product) => (
                     <div
                         key={product._id}
@@ -114,10 +114,11 @@ export default function ProductsGridPage() {
                             <p className="line-through text-gray-400 text-xs">
                                 Rs. {product.originalPrice}
                             </p>
-                            {/* ✅ Buttons wrapper responsive */}
+
+                            {/* ✅ Buttons wrapper (well-aligned) */}
                             <div className="flex flex-col sm:flex-row sm:justify-between gap-2 mt-2 w-full">
                                 <Button
-                                    className="flex-1 bg-blue-600 text-white hover:bg-blue-700 text-xs sm:text-sm"
+                                    className="w-full sm:flex-1 bg-blue-600 text-white hover:bg-blue-700 text-xs sm:text-sm"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         router.push(`/checkoutPage?_id=${product._id}`);
@@ -126,7 +127,7 @@ export default function ProductsGridPage() {
                                     Buy Now
                                 </Button>
                                 <Button
-                                    className="flex-1 bg-gray-200 text-gray-800 hover:bg-gray-300 text-xs sm:text-sm"
+                                    className="w-full sm:flex-1 bg-gray-200 text-gray-800 hover:bg-gray-300 text-xs sm:text-sm"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         handleAddToCart(product);
@@ -145,7 +146,6 @@ export default function ProductsGridPage() {
                             >
                                 View Details
                             </Button>
-
                         </div>
                     </div>
                 ))}

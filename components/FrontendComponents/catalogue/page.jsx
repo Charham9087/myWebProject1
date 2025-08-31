@@ -4,7 +4,11 @@ import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { GetCatalogueWithProducts,SaveCatalogue, showCatalogue } from "@/server/catalogue-functions";
+import {
+  GetCatalogueWithProducts,
+  SaveCatalogue,
+  showCatalogue,
+} from "@/server/catalogue-functions";
 
 export default function ProductsGridPage() {
   const [catalogueData, setCatalogueData] = useState([]);
@@ -133,13 +137,13 @@ export default function ProductsGridPage() {
                       </p>
 
                       {/* ✅ Buttons responsive */}
-                      <div className="flex flex-col sm:flex-row gap-2 mt-2">
+                      <div className="flex flex-col md:flex-row gap-2 mt-2">
                         <Button
                           onClick={(e) => {
                             e.stopPropagation();
                             router.push(`/checkoutPage?_id=${product._id}`);
                           }}
-                          className="flex-1 bg-blue-600 text-white hover:bg-blue-700 text-xs sm:text-sm"
+                          className="flex-1 bg-blue-600 text-white hover:bg-blue-700 text-[13px] md:text-sm"
                         >
                           Buy Now
                         </Button>
@@ -148,7 +152,7 @@ export default function ProductsGridPage() {
                             e.stopPropagation();
                             handleAddToCart(product);
                           }}
-                          className="flex-1 bg-gray-200 text-gray-800 hover:bg-gray-300 text-xs sm:text-sm"
+                          className="flex-1 bg-gray-200 text-gray-800 hover:bg-gray-300 text-[13px] md:text-sm"
                         >
                           Add To Cart
                         </Button>
@@ -159,7 +163,7 @@ export default function ProductsGridPage() {
                           e.stopPropagation();
                           handleViewDetails(product._id);
                         }}
-                        className="mt-2 w-full bg-gray-100 text-gray-800 hover:bg-gray-200 text-xs sm:text-sm"
+                        className="mt-2 w-full bg-gray-100 text-gray-800 hover:bg-gray-200 text-[13px] md:text-sm"
                       >
                         View Details
                       </Button>
@@ -171,6 +175,5 @@ export default function ProductsGridPage() {
           )
       )}
     </div>
-
   );
 }
