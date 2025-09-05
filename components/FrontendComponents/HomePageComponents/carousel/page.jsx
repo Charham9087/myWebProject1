@@ -31,73 +31,15 @@ export default function Carousel() {
   }, [slides.length]);
 
   return (
-    <>
-      <div className="relative w-full max-w-5xl mx-auto mt-6 overflow-hidden rounded-lg shadow-lg">
-        <div
-          className="flex transition-transform duration-700 ease-in-out"
-          style={{ transform: `translateX(-${index * 100}%)` }}
-        >
-          {slides.map((slide, i) => (
-            <div key={i} className="relative w-full flex-shrink-0">
-              <img
-                src={slide.src}
-                alt={`Slide ${i}`}
-                className="w-full h-40 md:h-52 object-cover"
-              />
-              <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 text-center bg-black/50 px-4 py-2 rounded">
-                <h1 className="text-lg md:text-2xl font-semibold text-white">
-                  {slide.title}
-                </h1>
-                <p className="text-sm md:text-base text-gray-200">{slide.description}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Prev / Next buttons */}
-        <button
-          onClick={() => setIndex((index - 1 + slides.length) % slides.length)}
-          className="absolute top-1/2 left-4 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white text-2xl px-3 py-1 rounded-full"
-        >
-          ❮
-        </button>
-        <button
-          onClick={() => setIndex((index + 1) % slides.length)}
-          className="absolute top-1/2 right-4 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white text-2xl px-3 py-1 rounded-full"
-        >
-          ❯
-        </button>
-
-        {/* Indicators */}
-        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-2">
-          {slides.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setIndex(i)}
-              className={`h-2 w-2 rounded-full ${index === i ? "bg-white" : "bg-gray-400"
-                }`}
-            />
-          ))}
-        </div>
-
-      </div>
-          <br/>
-          <h3 className="text-center text-3xl font-bold text-gray-600">Ghari Point</h3>
-      <br />
-
-      <p className="text-center text-gray-600 text-xs md:text-sm ">Deals You'll Love, Quality You Deserve.</p>
-      <br />
-      <hr />
-          <br />
-
-
-
-
-
-
-          
-
-    </>
+          <h1 className={`
+          text-4xl md:text-5xl font-extrabold text-center drop-shadow-lg animate-fadeSlide
+          ${darkMode
+            ? "bg-gradient-to-r from-white via-gray-300 to-gray-100"
+            : "bg-gradient-to-r from-black via-gray-800 to-gray-700"}
+          text-transparent bg-clip-text
+        `}>
+          Welcome to Ghari Point
+        </h1>
   );
 }
 
