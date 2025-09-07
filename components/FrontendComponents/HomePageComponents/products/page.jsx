@@ -159,6 +159,46 @@ export default function ProductsGrid({ categoryName = "All Products" }) {
                             : `Showing ${startIndex + 1}-${Math.min(endIndex, filteredProducts.length)} of ${filteredProducts.length} products`}
                     </p>
                 </div>
+                {loading && (
+                    <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50">
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-2xl border border-gray-200 dark:border-gray-700 max-w-sm mx-4">
+                            <div className="flex flex-col items-center space-y-4">
+                                {/* Animated spinner with gradient */}
+                                <div className="relative">
+                                    <div className="w-16 h-16 border-4 border-gray-200 dark:border-gray-600 rounded-full"></div>
+                                    <div className="absolute top-0 left-0 w-16 h-16 border-4 border-transparent border-t-blue-500 border-r-blue-500 rounded-full animate-spin"></div>
+                                </div>
+
+                                {/* Loading text with animation */}
+                                <div className="text-center">
+                                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                                        Loading Products
+                                    </h3>
+                                    <div className="flex items-center justify-center space-x-1">
+                                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+                                        <div
+                                            className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"
+                                            style={{ animationDelay: "0.1s" }}
+                                        ></div>
+                                        <div
+                                            className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"
+                                            style={{ animationDelay: "0.2s" }}
+                                        ></div>
+                                    </div>
+                                </div>
+
+                                {/* Progress bar */}
+                                <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2 overflow-hidden">
+                                    <div className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full animate-pulse"></div>
+                                </div>
+
+                                <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
+                                    Please wait while we fetch the latest products...
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Controls */}
                 <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
