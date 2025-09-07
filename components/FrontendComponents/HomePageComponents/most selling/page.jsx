@@ -4,6 +4,8 @@ import { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight, ShoppingBag } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import mostselling from "@/server/mostselling"
+
 
 export default function MostSellingPage() {
     const [mostSellingProducts, setMostSellingProducts] = useState([])
@@ -13,9 +15,7 @@ export default function MostSellingPage() {
     // ✅ Data fetch aap already kar chuke ho, bas mount pe call karna hai
     useEffect(() => {
         async function fetchMostSellingProducts() {
-            // yeh wala fetch aapne apne backend se set kiya hai
-            const res = await fetch("/api/Frontend/most-selling") 
-            const data = await res.json()
+            const data = await mostselling()
             setMostSellingProducts(data)
         }
         fetchMostSellingProducts()
