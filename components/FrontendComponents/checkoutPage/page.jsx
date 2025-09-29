@@ -65,53 +65,55 @@ export default function CheckoutPage() {
   // Load product details
   useEffect(() => {
     if (!_id) return
-    ;(async () => {
-      try {
-        const data = await getCheckout(_id)
-        setProductData(data)
-      } catch (error) {
-        console.error("Error fetching checkout data:", error)
-      }
-    })()
+      ; (async () => {
+        try {
+          const data = await getCheckout(_id)
+          setProductData(data)
+        } catch (error) {
+          console.error("Error fetching checkout data:", error)
+        }
+      })()
   }, [_id])
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.id]: e.target.value })
   }
 
-  const placeOrder = () => {
-    const newOrderID = crypto.randomBytes(4).toString("hex")
-    setOrderID(newOrderID)
+const placeOrder = () => {
+  const newOrderID = crypto.randomBytes(4).toString("hex")
+  setOrderID(newOrderID)
 
-    const { name, address, city, postal, email, phone } = form
-    const isEmpty = [name, address, city, postal, email, phone].some((value) => value.trim() === "")
-    if (isEmpty) {
-      alert("Please fill in all fields before placing the order!")
-      return
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(email)) {
-      alert("Please enter a valid email address!")
-      return
-    }
-
-    const phoneRegex = /^03\d{9}$/
-    if (!phoneRegex.test(phone)) {
-      alert("Please enter a valid Pakistani phone number starting with 03!")
-      return
-    }
-
-    const orderData = {
-      ...form,
-      OrderID: newOrderID,
-      total,
-    }
-
-    saveCheckout(orderData)
-    toast.success("Order placed successfully!")
-    router.push("/")
+  const { name, address, city, postal, email, phone } = form
+  // 🚨 Remove postal from the required field check
+  const isEmpty = [name, address, city, email, phone].some((value) => value.trim() === "")
+  if (isEmpty) {
+    alert("Please fill in all fields before placing the order!")
+    return
   }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRegex.test(email)) {
+    alert("Please enter a valid email address!")
+    return
+  }
+
+  const phoneRegex = /^03\d{9}$/
+  if (!phoneRegex.test(phone)) {
+    alert("Please enter a valid Pakistani phone number starting with 03!")
+    return
+  }
+
+  const orderData = {
+    ...form,
+    OrderID: newOrderID,
+    total,
+  }
+
+  saveCheckout(orderData)
+  toast.success("Order placed successfully!")
+  router.push("/")
+}
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-6">
@@ -203,7 +205,7 @@ export default function CheckoutPage() {
                   </div>
                   <div>
                     <Label htmlFor="postal" className="text-slate-700 font-medium">
-                      Postal Code
+                      Postal Code (optional)
                     </Label>
                     <Input
                       id="postal"
@@ -313,11 +315,11 @@ export default function CheckoutPage() {
             </Card>
 
             <Button
-  className="w-full h-12 bg-gradient-to-r from-gray-900 to-gray-700 hover:from-black hover:to-gray-800 text-white font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl"
-  onClick={placeOrder}
->
-  🛒 Place Order - Rs {total.toFixed(2)}
-</Button>
+              className="w-full h-12 bg-gradient-to-r from-gray-900 to-gray-700 hover:from-black hover:to-gray-800 text-white font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl"
+              onClick={placeOrder}
+            >
+              🛒 Place Order - Rs {total.toFixed(2)}
+            </Button>
 
           </div>
         </div>

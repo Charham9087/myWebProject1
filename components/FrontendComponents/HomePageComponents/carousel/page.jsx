@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Image from "next/image"
-import { ChevronLeft, ChevronRight, ShoppingBag, Star, Clock, Award } from "lucide-react"
+import { ChevronLeft, ChevronRight, Clock, Award } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 const slides = [
@@ -12,7 +12,6 @@ const slides = [
     subtitle: "Swiss Craftsmanship Excellence",
     description: "Discover our collection of premium Swiss watches, crafted with precision and elegance",
     image: "/luxury-watch-collection.jpg",
-
     featured: true,
     brand: "Swiss Heritage",
   },
@@ -22,7 +21,6 @@ const slides = [
     subtitle: "Latest Watch Collections",
     description: "Be among the first to own our newest timepiece masterpieces",
     image: "/modern-watch-display.jpg",
-
     badge: "NEW",
     brand: "Contemporary Series",
   },
@@ -32,7 +30,6 @@ const slides = [
     subtitle: "Horological Excellence",
     description: "Award-winning designs that represent the pinnacle of watchmaking artistry",
     image: "/master-collection-watches.jpg",
-
     rating: 4.9,
     brand: "Master Series",
   },
@@ -41,6 +38,11 @@ const slides = [
 export default function Carousel() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isAutoPlaying, setIsAutoPlaying] = useState(true)
+
+  // swipe states
+  const [touchStart, setTouchStart] = useState(null)
+  const [touchEnd, setTouchEnd] = useState(null)
+  const minSwipeDistance = 50 // px threshold
 
   useEffect(() => {
     if (!isAutoPlaying) return
@@ -64,26 +66,52 @@ export default function Carousel() {
     setCurrentSlide(index)
   }
 
+  // swipe handlers
+  const onTouchStart = (e) => {
+    setTouchEnd(null)
+    setTouchStart(e.targetTouches[0].clientX)
+    setIsAutoPlaying(false) // pause autoplay while swiping
+  }
+
+  const onTouchMove = (e) => {
+    setTouchEnd(e.targetTouches[0].clientX)
+  }
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return
+    const distance = touchStart - touchEnd
+    if (distance > minSwipeDistance) nextSlide()
+    if (distance < -minSwipeDistance) prevSlide()
+    setTimeout(() => setIsAutoPlaying(true), 2000) // resume autoplay
+  }
+
   return (
     <div
       className="relative w-full h-[500px] md:h-[700px] overflow-hidden rounded-lg bg-gradient-to-br from-background to-muted"
       onMouseEnter={() => setIsAutoPlaying(false)}
       onMouseLeave={() => setIsAutoPlaying(true)}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
     >
       <div className="relative w-full h-full">
         {slides.map((slide, index) => (
           <div
             key={slide.id}
-            className={`absolute inset-0 transition-all duration-1000 ease-in-out ${index === currentSlide
-              ? "opacity-100 translate-x-0"
-              : index < currentSlide
+            className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
+              index === currentSlide
+                ? "opacity-100 translate-x-0"
+                : index < currentSlide
                 ? "opacity-0 -translate-x-full"
                 : "opacity-0 translate-x-full"
-              }`}
+            }`}
           >
             <div className="absolute inset-0">
               <Image
-                src={slide.image || "/placeholder.svg?height=700&width=1200&query=luxury watch on elegant background"}
+                src={
+                  slide.image ||
+                  "/placeholder.svg?height=700&width=1200&query=luxury watch on elegant background"
+                }
                 alt={slide.title}
                 fill
                 className="object-cover"
@@ -108,16 +136,15 @@ export default function Carousel() {
                     <span className="text-accent font-medium text-lg">{slide.brand}</span>
                   </div>
 
-                  <h1 className="text-4xl md:text-6xl font-bold mb-4 text-balance leading-tight text-white drop-shadow-lg">
+                  <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight drop-shadow-lg">
                     {slide.title}
                   </h1>
                   <h2 className="text-xl md:text-2xl font-semibold mb-4 text-white/95 drop-shadow-md">
                     {slide.subtitle}
                   </h2>
-                  <p className="text-lg md:text-xl mb-6 text-white/90 text-pretty leading-relaxed drop-shadow-sm">
+                  <p className="text-lg md:text-xl mb-6 text-white/90 leading-relaxed drop-shadow-sm">
                     {slide.description}
                   </p>
-
                 </div>
               </div>
             </div>
@@ -125,6 +152,7 @@ export default function Carousel() {
         ))}
       </div>
 
+      {/* prev / next buttons */}
       <Button
         variant="outline"
         size="icon"
@@ -143,19 +171,24 @@ export default function Carousel() {
         <ChevronRight className="w-6 h-6" />
       </Button>
 
+      {/* dot navigation */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20">
         <div className="flex gap-3">
           {slides.map((_, index) => (
             <button
               key={index}
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentSlide ? "bg-primary scale-125 shadow-lg" : "bg-white/50 hover:bg-white/70"
-                }`}
+              className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                index === currentSlide
+                  ? "bg-primary scale-125 shadow-lg"
+                  : "bg-white/50 hover:bg-white/70"
+              }`}
               onClick={() => goToSlide(index)}
             />
           ))}
         </div>
       </div>
 
+      {/* slide counter */}
       <div className="absolute top-6 right-6 z-20 bg-black/20 text-white px-4 py-2 rounded-full text-sm backdrop-blur-sm border border-white/20">
         {currentSlide + 1} / {slides.length}
       </div>
