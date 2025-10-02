@@ -35,6 +35,7 @@ export default function CheckoutPage() {
     postal: "",
     email: "",
     phone: "",
+    comments: "",  // ✅ Added comments field
     OrderID: "",
     productID: _id || "",
     total: 0,
@@ -48,7 +49,6 @@ export default function CheckoutPage() {
     }))
   }, [total, _id])
 
-  // Load quantities and match IDs from cart
   useEffect(() => {
     if (!_id) return
 
@@ -62,7 +62,6 @@ export default function CheckoutPage() {
     }
   }, [_id])
 
-  // Load product details
   useEffect(() => {
     if (!_id) return
       ; (async () => {
@@ -79,41 +78,39 @@ export default function CheckoutPage() {
     setForm({ ...form, [e.target.id]: e.target.value })
   }
 
-const placeOrder = () => {
-  const newOrderID = crypto.randomBytes(4).toString("hex")
-  setOrderID(newOrderID)
+  const placeOrder = () => {
+    const newOrderID = crypto.randomBytes(4).toString("hex")
+    setOrderID(newOrderID)
 
-  const { name, address, city, postal, email, phone } = form
-  // 🚨 Remove postal from the required field check
-  const isEmpty = [name, address, city, email, phone].some((value) => value.trim() === "")
-  if (isEmpty) {
-    alert("Please fill in all fields before placing the order!")
-    return
+    const { name, address, city, email, phone } = form
+    const isEmpty = [name, address, city, email, phone].some((value) => value.trim() === "")
+    if (isEmpty) {
+      alert("Please fill in all fields before placing the order!")
+      return
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      alert("Please enter a valid email address!")
+      return
+    }
+
+    const phoneRegex = /^03\d{9}$/
+    if (!phoneRegex.test(phone)) {
+      alert("Please enter a valid Pakistani phone number starting with 03!")
+      return
+    }
+
+    const orderData = {
+      ...form,
+      OrderID: newOrderID,
+      total,
+    }
+
+    saveCheckout(orderData)
+    toast.success("Order placed successfully!")
+    router.push("/")
   }
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  if (!emailRegex.test(email)) {
-    alert("Please enter a valid email address!")
-    return
-  }
-
-  const phoneRegex = /^03\d{9}$/
-  if (!phoneRegex.test(phone)) {
-    alert("Please enter a valid Pakistani phone number starting with 03!")
-    return
-  }
-
-  const orderData = {
-    ...form,
-    OrderID: newOrderID,
-    total,
-  }
-
-  saveCheckout(orderData)
-  toast.success("Order placed successfully!")
-  router.push("/")
-}
-
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-6">
@@ -134,6 +131,7 @@ const placeOrder = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="name" className="flex items-center gap-2 text-slate-700 font-medium">
@@ -148,6 +146,7 @@ const placeOrder = () => {
                       className="mt-1 border-slate-200 focus:border-blue-500 focus:ring-blue-500"
                     />
                   </div>
+
                   <div>
                     <Label htmlFor="phone" className="flex items-center gap-2 text-slate-700 font-medium">
                       <Phone className="w-4 h-4" />
@@ -203,6 +202,7 @@ const placeOrder = () => {
                       className="mt-1 border-slate-200 focus:border-blue-500 focus:ring-blue-500"
                     />
                   </div>
+
                   <div>
                     <Label htmlFor="postal" className="text-slate-700 font-medium">
                       Postal Code (optional)
@@ -216,6 +216,21 @@ const placeOrder = () => {
                     />
                   </div>
                 </div>
+
+                {/* ✅ New Comments Field */}
+                <div>
+                  <Label htmlFor="comments" className="text-slate-700 font-medium">
+                    Comments (optional)
+                  </Label>
+                  <Input
+                    id="comments"
+                    placeholder="Any special instructions?"
+                    value={form.comments}
+                    onChange={handleChange}
+                    className="mt-1 border-slate-200 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                </div>
+
               </CardContent>
             </Card>
 
@@ -226,6 +241,7 @@ const placeOrder = () => {
                   Payment Method
                 </CardTitle>
               </CardHeader>
+
               <CardContent>
                 <Select value={paymentMethod} onValueChange={setPaymentMethod}>
                   <SelectTrigger className="border-slate-200 focus:border-blue-500 focus:ring-blue-500">
