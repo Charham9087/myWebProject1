@@ -24,7 +24,7 @@ export default function FloatingWhatsApp() {
           className="fixed bottom-6 right-6 bg-green-500 text-white px-4 py-3 rounded-full shadow-lg z-50 flex items-center gap-2"
         >
           <FaWhatsapp size={24} />
-          <span className="font-medium">Contact on WhatsApp</span>
+          <span className="font-medium"><a href="https://wa.me/923304462277" target="_blank" rel="noopener noreferrer">Contact on WhatsApp</a></span>
         </motion.div>
       ) : (
         <motion.a
