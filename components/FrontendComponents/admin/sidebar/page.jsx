@@ -24,7 +24,6 @@ import {
   Activity,
   Bell,
   BellDot,
-  CreditCard,
 } from "lucide-react";
 
 
