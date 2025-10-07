@@ -24,6 +24,7 @@ import {
   Activity,
   Bell,
   BellDot,
+  CreditCard,
 } from "lucide-react";
 
 
@@ -64,6 +65,11 @@ const items = [
     title: "CH Store",
     url: "/",
     icon: Store,
+  },
+   {
+    title: "Checkout Page",
+    url: "/admin/checkoutAdmin",
+    icon: CreditCard,
   }
 ]
 export default function AppSidebar() {

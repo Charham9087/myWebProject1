@@ -4,33 +4,60 @@ import orders from "@/components/models/orders";
 import Products from "@/components/models/products";
 import nodemailer from "nodemailer";
 
-
 export async function saveCheckout(data) {
   console.log("RECEIVED DATA FROM FRONTEND", data);
   await ConnectDB();
-  console.log('connected to DB successfully')
+  console.log("connected to DB successfully");
 
-  const { name, email, phone, address, city, postal, comments, productID, orderID, total } = data;
+  const {
+    name,
+    email,
+    phone,
+    address,
+    city,
+    postal,
+    comments,
+    productID,  // for normal checkout
+    products,   // for admin checkout
+    orderID,
+    total,
+  } = data;
 
-  const _id = productID.split(",")
+  // ✅ Handle both types of data (productID string OR products array)
+  let finalProducts = [];
 
+  if (Array.isArray(products) && products.length > 0) {
+    // Admin Checkout – full product details
+    finalProducts = products.map((p) => ({
+      id: p._id,
+      name: p.name,
+      quantity: p.quantity,
+      price: Number(p.manualPrice) || 0,
+    }));
+  } else if (productID) {
+    // Normal Checkout – just IDs
+    finalProducts = productID.split(",").map((id) => ({ id }));
+  }
 
+  // ✅ Save to DB
   await orders.create({
-    name: name,
-    email: email,
-    phone: phone,
-    address: address,
-    city: city,
-    postal: postal,
-    comments: comments,
-    productID: _id,
-    orderID: orderID,
-    total: total,
-  })
-  // this is the function to send order email to customer
+    name,
+    email,
+    phone,
+    address,
+    city,
+    postal,
+    comments,
+    productID: finalProducts.map((p) => p.id), // for backward compatibility
+    products: finalProducts,                   // full structured data
+    orderID,
+    total,
+  });
+
+  console.log("✅ Order saved to DB successfully");
+
+  // ✅ Send confirmation email to customer
   async function sendEmail(email) {
-    // const email = email
-    console.log("creating node mailer transporter")
     const transporter = nodemailer.createTransport({
       service: "gmail",
       port: 587,
@@ -40,14 +67,13 @@ export async function saveCheckout(data) {
         pass: process.env.User_PASS,
       },
     });
-    console.log("transporter created")
-    console.log("sending emails")
-    transporter.sendMail({
+
+    await transporter.sendMail({
       from: `"Ghari Point" <${process.env.User_ID}>`,
       to: email,
-      subject: "Ghari Point-your Order ",
+      subject: "Ghari Point - Your Order",
       html: `
-  <div style="font-family: Arial, sans-serif; background-color:#f9f9f9; padding:20px;">
+        <div style="font-family: Arial, sans-serif; background-color:#f9f9f9; padding:20px;">
     <div style="max-width:600px; margin:0 auto; background:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
       <div style="background:#000; color:#fff; text-align:center; padding:20px;">
         <div style="background:#000; color:#fff; text-align:center; padding:20px;">
@@ -63,12 +89,13 @@ export async function saveCheckout(data) {
         <h2 style="font-size:20px; margin-bottom:10px; color:#333;">Order Confirmation</h2>
         <p style="font-size:14px; color:#555;">
           Hi <strong>${name}</strong>,<br><br>
-          Thank you for shopping with <strong>Ghari Point</strong>. We’ve received your order and it’s now being processed.
+          Thank you for shopping with <strong>Ghari Point</strong>. We’ve received your order ${orderID} and it’s now being processed.
         </p>
 
         <div style="margin:20px 0; padding:15px; background:#f3f3f3; border-radius:6px;">
           <p style="margin:0; font-size:14px; color:#333;">
             <b>Order Summary</b><br>
+            Order ID: <strong>${orderID}</strong><br>
             Total Amount: <strong>Rs. ${total}</strong><br>
             Shipping Address: <br>
             ${address}, ${city}, ${postal}<br>
@@ -91,15 +118,14 @@ export async function saveCheckout(data) {
       </div>
     </div>
   </div>
-`
-    })
+`,
+    });
 
-    console.log("email sent successfully successfully")
-
+    console.log("📩 Customer email sent successfully");
   }
-  sendEmail(email)
+  await sendEmail(email);
 
-  // Admin email notification
+  // ✅ Send admin notification email
   async function sendAdminEmail() {
     const transporter = nodemailer.createTransport({
       service: "gmail",
@@ -111,29 +137,39 @@ export async function saveCheckout(data) {
       },
     });
 
+    const productListHTML = finalProducts
+      .map(
+        (p) =>
+          `<li>${p.name || "Unknown"} — Qty: ${p.quantity || "-"} — Rs ${p.price || "-"}</li>`
+      )
+      .join("");
+
     await transporter.sendMail({
       from: `"Ghari Point" <${process.env.User_ID}>`,
-      to: "gharipoint@gmail.com",  // 👈 Admin email here
-      subject: `New Order Placed - ${orderID}`,
+      to: "gharipoint@gmail.com",
+      subject: `New Order - ${orderID}`,
       html: `
-            <h2>New Order Received</h2>
-            <p><b>Name:</b> ${name}</p>
-            <p><b>Email:</b> ${email}</p>
-            <p><b>Phone:</b> ${phone}</p>
-            <p><b>Address:</b> ${address}, ${city}, ${postal}</p>
-            <p><b>Total Amount:</b> Rs. ${total}</p>
-            <p><b>Order ID:</b> ${orderID}</p>
-            <p><b>Comments:</b> ${comments || "None"}</p>
-        `
+        <h2>New Order Received</h2>
+        <p><b>Name:</b> ${name}</p>
+        <p><b>Email:</b> ${email}</p>
+        <p><b>Phone:</b> ${phone}</p>
+        <p><b>Address:</b> ${address}, ${city}, ${postal}</p>
+        <p><b>Total:</b> Rs. ${total}</p>
+        <p><b>Order ID:</b> ${orderID}</p>
+        <p><b>Comments:</b> ${comments || "None"}</p>
+        <h3>Products:</h3>
+        <ul>${productListHTML}</ul>
+      `,
     });
 
-    console.log("Admin email sent!");
+    console.log("📩 Admin email sent successfully");
   }
-  sendAdminEmail();
 
-  console.log("data saved to DB successfully")
+  await sendAdminEmail();
 
+  console.log("✅ saveCheckout() completed successfully");
 }
+
 
 export async function getCheckout(_id) {
   console.log("RECEIVED DATA FROM FRONTEND", _id)

@@ -36,7 +36,7 @@ export default function CheckoutPage() {
     email: "",
     phone: "",
     comments: "",  // ✅ Added comments field
-    OrderID: "",
+    orderID: "",
     productID: _id || "",
     total: 0,
   })
@@ -77,10 +77,12 @@ export default function CheckoutPage() {
   const handleChange = (e) => {
     setForm({ ...form, [e.target.id]: e.target.value })
   }
+  // ✅ Generate Order ID (browser-safe)
+  const generateOrderID = () => "ORD-" + Math.floor(Math.random() * 1e9);
 
   const placeOrder = () => {
-    const newOrderID = crypto.randomBytes(4).toString("hex")
-    setOrderID(newOrderID)
+    const newOrderID = generateOrderID();
+    setOrderID(newOrderID);
 
     const { name, address, city, email, phone } = form
     const isEmpty = [name, address, city, email, phone].some((value) => value.trim() === "")
@@ -103,7 +105,7 @@ export default function CheckoutPage() {
 
     const orderData = {
       ...form,
-      OrderID: newOrderID,
+      orderID: newOrderID,
       total,
     }
 
