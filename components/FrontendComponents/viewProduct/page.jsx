@@ -300,12 +300,6 @@ export default function ViewProductPage() {
                 </div>
               </div>
 
-              <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-3 sm:p-4">
-                <p className="text-amber-800 dark:text-amber-200 text-xs sm:text-sm leading-relaxed">
-                  <strong>Note:</strong> Colors will be confirmed at the time of order confirmation on WhatsApp. Sorry
-                  for any inconvenience.
-                </p>
-              </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 pt-4">
