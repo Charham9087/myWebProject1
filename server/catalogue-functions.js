@@ -1,66 +1,54 @@
-"use server"
+"use server";
 
+import { cache } from "react";
+import { revalidateTag } from "next/cache"; // ✅ Enable manual cache refresh
 import ConnectDB from "@/components/mongoConnect";
 import Products from "@/components/models/products";
 import catalogue from "@/components/models/catalogue";
-export async function GetCatalogueWithProducts() {
+
+export const revalidate = 3600; // ✅ Revalidate every 1 hour
+
+// ✅ Cached with ISR + Tagged for invalidation
+export const GetCatalogueWithProducts = cache(async function () {
     await ConnectDB();
     console.log("Connected to DB Successfully");
 
-    // Get all catalogues
     const catalogues = await catalogue.find();
 
-    // For each catalogue, find matching products
     const catalogueWithProducts = await Promise.all(
         catalogues.map(async (cat) => {
             const matchedProducts = await Products.find({ catalogues: cat.name });
-            console.log("matchedProducts full object from DB\n", matchedProducts);
 
-            // Convert each product's _id to string
             const productsWithStringId = matchedProducts.map(product => ({
                 ...product.toObject(),
-                _id: product._id.toString()
+                _id: product._id.toString(),
             }));
 
             return {
                 name: cat.name,
-                products: productsWithStringId
+                products: productsWithStringId,
             };
         })
     );
+
     console.log("catalogueWithProducts\n", catalogueWithProducts);
-
     return catalogueWithProducts;
-}
+}, { tags: ["catalogues"] }); // ✅ Assign ISR Tag
 
-
-
-
-
-
-
-
+// ❌ Write operation – not cached
 export async function SaveCatalogue(data) {
     console.log("RECEIVED DATA FROM FRONTEND", data);
     await ConnectDB();
-    console.log('connected to DB successfully')
 
-    const name = data.name;
+    await catalogue.create({ name: data.name });
 
-    await catalogue.create({ name: name })
+    revalidateTag("catalogues"); // ✅ Instantly refresh ISR cache
 }
 
-
-
-
-
-export async function showCatalogue() {
+// ✅ Cached with ISR + Tag as well (optional)
+export const showCatalogue = cache(async function () {
     await ConnectDB();
-    console.log('connected to DB successfully')
 
     const catalogues = await catalogue.find();
-
-    const names = catalogues.map(c => c.name);
-
-    return names;
-}
+    return catalogues.map(c => c.name);
+}, { tags: ["catalogues"] });

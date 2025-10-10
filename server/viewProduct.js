@@ -1,25 +1,25 @@
 'use server'
 import ConnectDB from "@/components/mongoConnect";
 import products from "@/components/models/products";
+import { unstable_cache } from "next/cache";
+import { Tags } from "lucide-react";
+import { revalidateTag } from "next/cache";
 
-export default async function ViewProduct({ _id }) {
-  try {
-    console.log("Connecting to DB...");
-    await ConnectDB();
-    console.log("Connected!");
-
-    const foundProduct = await products.findOne({ _id });
-    if (foundProduct) {
-      console.log("Product found:", foundProduct);
-      const obj = foundProduct.toObject();
-      obj._id = obj._id.toString();   // important
-      return obj;
-    } else {
-      console.error("Product not found");
+const cachedViewProduct = unstable_cache(
+  async (_id) => {
+    try {
+      await ConnectDB();
+      const foundProduct = await products.findOne({ _id }).lean();
+      return foundProduct ? { ...foundProduct, _id: foundProduct._id.toString() } : null;
+    } catch (error) {
+      console.error("Error fetching product:", error);
       return null;
     }
-  } catch (error) {
-    console.error("Unexpected error:", error);
-    return null;
-  }
+  },
+  [], // optional key prefix
+  { revalidate: 3600 , tags: ["products"] }// ✅ ISR here!
+);
+
+export default async function ViewProduct({ _id }) {
+  return cachedViewProduct(_id); // ✅ returns cached data with ISR
 }
