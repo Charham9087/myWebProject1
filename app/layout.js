@@ -22,44 +22,40 @@ export default function RootLayout({ children }) {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-        {/* <!-- ✅ Primary SEO --> */}
-        <title>Buy Premium Watches Online in Pakistan | Ghari Point</title>
+        {/* ✅ Stronger SEO Title with Generic Keywords */}
+        <title>Watches in Pakistan | Ghari Point - Buy Luxury, Smart & Stainless Steel Watches</title>
+
+        {/* ✅ Updated Description (Includes "Watch", "Ghari", "Watches") */}
         <meta
           name="description"
-          content="Shop luxury, smart, and stainless-steel watches for men and women at Ghari Point. Cash on Delivery, 3-Day Replacement, and Fast Nationwide Delivery across Pakistan."
+          content="Searching for Watch or Ghari in Pakistan? Ghari Point offers premium luxury, smart, and stainless-steel watches for men & women. Cash on Delivery & 3-Day Replacement."
         />
+
+        {/* ✅ Expanded Keywords for Broad Search Ranking */}
         <meta
           name="keywords"
-          content="buy watches online Pakistan, Ghari Point, men watches, women watches, smart watches, luxury watches, stainless steel watches, cash on delivery watches, watches store Pakistan"
+          content="watch, ghari, watches pakistan, buy watch online, men watches, women watches, smart watches, luxury watches, stainless steel watch, ghari online, pakistan watches store"
         />
+
         <meta name="robots" content="index, follow" />
-        <meta name="author" content="Ch Arham" />
+        <meta name="author" content="Ghari Point" />
         <link rel="canonical" href="https://www.gharipoint.com" />
 
-        {/* <!-- ✅ Open Graph (Facebook, Instagram, WhatsApp Previews) --> */}
-        <meta property="og:title" content="Buy Premium Watches Online in Pakistan | Ghari Point" />
+        {/* ✅ Open Graph for Sharing */}
+        <meta property="og:title" content="Watches in Pakistan | Ghari Point" />
         <meta
           property="og:description"
-          content="Shop authentic wrist watches at Ghari Point. Discover luxury, smart, and stainless-steel timepieces. Cash on Delivery and 3-Day Replacement Available!"
+          content="Buy Watch / Ghari Online in Pakistan. Luxury & Smart Watches with Cash on Delivery & Fast Shipping."
         />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://www.gharipoint.com" />
         <meta property="og:site_name" content="Ghari Point" />
         <meta property="og:image" content="https://www.gharipoint.com/assets/gharipoint-banner.jpg" />
 
-        {/* <!-- ✅ Twitter Card --> */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Buy Premium Watches Online in Pakistan | Ghari Point" />
-        <meta
-          name="twitter:description"
-          content="Discover authentic wrist watches at Ghari Point — where luxury meets affordability. Cash on Delivery & 3-Day Replacement across Pakistan."
-        />
-        <meta name="twitter:image" content="https://www.gharipoint.com/assets/gharipoint-banner.jpg" />
-
-        {/* <!-- ✅ Favicon --> */}
+        {/* ✅ Favicon */}
         <link rel="icon" href="/favicon.ico" type="image/x-icon" />
 
-        {/* <!-- ✅ Structured Data for Google Rich Results --> */}
+        {/* ✅ Updated Structured Data with New Links */}
         <Script
           id="organization-schema"
           type="application/ld+json"
@@ -72,11 +68,11 @@ export default function RootLayout({ children }) {
               "url": "https://www.gharipoint.com",
               "logo": "https://www.gharipoint.com/assets/logo.png",
               "sameAs": [
-                "https://www.facebook.com/gharipoint",
-                "https://www.instagram.com/gharipoint",
-                "https://www.tiktok.com/@gharipoint"
+                "https://www.instagram.com/ghari.point?igsh=OGszYjRydDdscjY4",
+                "https://www.facebook.com/share/1KNuxxpcsp/",
+                "https://www.tiktok.com/@gharipoint?_t=ZS-90RKG0uSbJw&_r=1"
               ],
-              "description": "Ghari Point is Pakistan's trusted online store for luxury, smart, and stainless-steel watches. Offering Cash on Delivery and 3-Day Replacement.",
+              "description": "Ghari Point is Pakistan's trusted store for Watch / Ghari — luxury, smart & stainless-steel watches with Cash on Delivery.",
               "contactPoint": {
                 "@type": "ContactPoint",
                 "telephone": "+92-300-0000000",
@@ -87,8 +83,8 @@ export default function RootLayout({ children }) {
             }),
           }}
         />
-
       </head>
+
 
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <EdgeStoreProvider>
@@ -101,7 +97,7 @@ export default function RootLayout({ children }) {
           </NEXT_AUTH_PROVIDER>
         </EdgeStoreProvider>
 
-       {/* ✅ Facebook Meta Pixel Code */}
+        {/* ✅ Facebook Meta Pixel Code */}
         <Script id="facebook-pixel" strategy="afterInteractive">
           {`
             !(function(f,b,e,v,n,t,s){
