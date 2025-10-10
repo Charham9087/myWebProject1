@@ -10,7 +10,28 @@ import catalogue from "@/components/models/catalogue";
 
 export const GetCatalogueWithProducts = cache(async function () {
   await ConnectDB();
-  // ...
+    console.log("Connected to DB Successfully");
+
+    const catalogues = await catalogue.find();
+
+    const catalogueWithProducts = await Promise.all(
+        catalogues.map(async (cat) => {
+            const matchedProducts = await Products.find({ catalogues: cat.name });
+
+            const productsWithStringId = matchedProducts.map(product => ({
+                ...product.toObject(),
+                _id: product._id.toString(),
+            }));
+
+            return {
+                name: cat.name,
+                products: productsWithStringId,
+            };
+        })
+    );
+
+    console.log("catalogueWithProducts\n", catalogueWithProducts);
+    return catalogueWithProducts;
 }, { tags: ["catalogues"] });
 
 export async function SaveCatalogue(data) {
