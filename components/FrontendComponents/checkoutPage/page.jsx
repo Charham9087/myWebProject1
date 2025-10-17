@@ -8,7 +8,6 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@
 import toast from "react-hot-toast"
 import { useRouter, useSearchParams } from "next/navigation"
 import { getCheckout, saveCheckout } from "@/server/checkout"
-import crypto from "crypto"
 import { ShoppingBag, CreditCard, MapPin, Phone, Mail, User } from "lucide-react"
 
 export default function CheckoutPage() {
@@ -35,7 +34,7 @@ export default function CheckoutPage() {
     postal: "",
     email: "",
     phone: "",
-    comments: "",  // ✅ Added comments field
+    comments: "",
     orderID: "",
     productID: _id || "",
     total: 0,
@@ -49,9 +48,9 @@ export default function CheckoutPage() {
     }))
   }, [total, _id])
 
+  // ✅ Fetch quantity from localStorage
   useEffect(() => {
     if (!_id) return
-
     const cart = localStorage.getItem("cartItems")
     if (cart) {
       const parsedCart = JSON.parse(cart)
@@ -62,27 +61,43 @@ export default function CheckoutPage() {
     }
   }, [_id])
 
+  // ✅ Fetch checkout product data
   useEffect(() => {
     if (!_id) return
-      ; (async () => {
-        try {
-          const data = await getCheckout(_id)
-          setProductData(data)
-        } catch (error) {
-          console.error("Error fetching checkout data:", error)
-        }
-      })()
+    ;(async () => {
+      try {
+        const data = await getCheckout(_id)
+        setProductData(data)
+      } catch (error) {
+        console.error("Error fetching checkout data:", error)
+      }
+    })()
   }, [_id])
+
+  // ✅ Fire Meta Pixel InitiateCheckout when page loads
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.fbq && productData.length > 0) {
+      const productTitles = productData.map((item) => item.title).join(", ")
+      window.fbq("track", "InitiateCheckout", {
+        value: total,
+        currency: "PKR",
+        content_ids: productData.map((p) => p._id),
+        content_name: productTitles,
+        num_items: productData.length,
+      })
+      console.log("🟢 Meta Pixel: InitiateCheckout fired", { total, products: productTitles })
+    }
+  }, [productData, total])
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.id]: e.target.value })
   }
-  // ✅ Generate Order ID (browser-safe)
-  const generateOrderID = () => "ORD-" + Math.floor(Math.random() * 1e9);
+
+  const generateOrderID = () => "ORD-" + Math.floor(Math.random() * 1e9)
 
   const placeOrder = () => {
-    const newOrderID = generateOrderID();
-    setOrderID(newOrderID);
+    const newOrderID = generateOrderID()
+    setOrderID(newOrderID)
 
     const { name, address, city, email, phone } = form
     const isEmpty = [name, address, city, email, phone].some((value) => value.trim() === "")
@@ -109,6 +124,19 @@ export default function CheckoutPage() {
       total,
     }
 
+    // ✅ Fire Meta Pixel Purchase event
+    if (typeof window !== "undefined" && window.fbq) {
+      window.fbq("track", "Purchase", {
+        value: total,
+        currency: "PKR",
+        content_ids: productData.map((p) => p._id),
+        content_name: productData.map((p) => p.title).join(", "),
+        num_items: productData.length,
+        order_id: newOrderID,
+      })
+      console.log("🟢 Meta Pixel: Purchase fired", { total, orderID: newOrderID })
+    }
+
     saveCheckout(orderData)
     toast.success("Order placed successfully!")
     router.push("/")
@@ -125,6 +153,7 @@ export default function CheckoutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left: Shipping Form */}
           <div className="space-y-6">
+            {/* Shipping Info */}
             <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 text-slate-800">
@@ -133,137 +162,73 @@ export default function CheckoutPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-
+                {/* Name & Phone */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="name" className="flex items-center gap-2 text-slate-700 font-medium">
-                      <User className="w-4 h-4" />
-                      Full Name
+                      <User className="w-4 h-4" /> Full Name
                     </Label>
-                    <Input
-                      id="name"
-                      placeholder="Enter your full name"
-                      value={form.name}
-                      onChange={handleChange}
-                      className="mt-1 border-slate-200 focus:border-blue-500 focus:ring-blue-500"
-                    />
+                    <Input id="name" placeholder="Enter your full name" value={form.name} onChange={handleChange} />
                   </div>
-
                   <div>
                     <Label htmlFor="phone" className="flex items-center gap-2 text-slate-700 font-medium">
-                      <Phone className="w-4 h-4" />
-                      Phone Number
+                      <Phone className="w-4 h-4" /> Phone Number
                     </Label>
-                    <Input
-                      id="phone"
-                      placeholder="03XXXXXXXXX"
-                      value={form.phone}
-                      onChange={handleChange}
-                      className="mt-1 border-slate-200 focus:border-blue-500 focus:ring-blue-500"
-                    />
+                    <Input id="phone" placeholder="03XXXXXXXXX" value={form.phone} onChange={handleChange} />
                   </div>
                 </div>
 
+                {/* Email */}
                 <div>
                   <Label htmlFor="email" className="flex items-center gap-2 text-slate-700 font-medium">
-                    <Mail className="w-4 h-4" />
-                    Email Address
+                    <Mail className="w-4 h-4" /> Email Address
                   </Label>
-                  <Input
-                    id="email"
-                    placeholder="you@example.com"
-                    value={form.email}
-                    onChange={handleChange}
-                    className="mt-1 border-slate-200 focus:border-blue-500 focus:ring-blue-500"
-                  />
+                  <Input id="email" placeholder="you@example.com" value={form.email} onChange={handleChange} />
                 </div>
 
+                {/* Address */}
                 <div>
-                  <Label htmlFor="address" className="text-slate-700 font-medium">
-                    Complete Address
-                  </Label>
-                  <Input
-                    id="address"
-                    placeholder="House #, Street, Area"
-                    value={form.address}
-                    onChange={handleChange}
-                    className="mt-1 border-slate-200 focus:border-blue-500 focus:ring-blue-500"
-                  />
+                  <Label htmlFor="address" className="text-slate-700 font-medium">Complete Address</Label>
+                  <Input id="address" placeholder="House #, Street, Area" value={form.address} onChange={handleChange} />
                 </div>
 
+                {/* City + Postal */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="city" className="text-slate-700 font-medium">
-                      City
-                    </Label>
-                    <Input
-                      id="city"
-                      placeholder="Enter your city"
-                      value={form.city}
-                      onChange={handleChange}
-                      className="mt-1 border-slate-200 focus:border-blue-500 focus:ring-blue-500"
-                    />
+                    <Label htmlFor="city" className="text-slate-700 font-medium">City</Label>
+                    <Input id="city" placeholder="Enter your city" value={form.city} onChange={handleChange} />
                   </div>
-
                   <div>
-                    <Label htmlFor="postal" className="text-slate-700 font-medium">
-                      Postal Code (optional)
-                    </Label>
-                    <Input
-                      id="postal"
-                      placeholder="Enter postal code"
-                      value={form.postal}
-                      onChange={handleChange}
-                      className="mt-1 border-slate-200 focus:border-blue-500 focus:ring-blue-500"
-                    />
+                    <Label htmlFor="postal" className="text-slate-700 font-medium">Postal Code (optional)</Label>
+                    <Input id="postal" placeholder="Enter postal code" value={form.postal} onChange={handleChange} />
                   </div>
                 </div>
 
-                {/* ✅ New Comments Field */}
+                {/* Comments */}
                 <div>
-                  <Label htmlFor="comments" className="text-slate-700 font-medium">
-                    Comments (optional)
-                  </Label>
-                  <Input
-                    id="comments"
-                    placeholder="Any special instructions?"
-                    value={form.comments}
-                    onChange={handleChange}
-                    className="mt-1 border-slate-200 focus:border-blue-500 focus:ring-blue-500"
-                  />
+                  <Label htmlFor="comments" className="text-slate-700 font-medium">Comments (optional)</Label>
+                  <Input id="comments" placeholder="Any special instructions?" value={form.comments} onChange={handleChange} />
                 </div>
-
               </CardContent>
             </Card>
 
+            {/* Payment */}
             <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 text-slate-800">
-                  <CreditCard className="w-5 h-5 text-green-600" />
-                  Payment Method
+                  <CreditCard className="w-5 h-5 text-green-600" /> Payment Method
                 </CardTitle>
               </CardHeader>
-
               <CardContent>
                 <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                  <SelectTrigger className="border-slate-200 focus:border-blue-500 focus:ring-blue-500">
-                    <SelectValue placeholder="Select payment method" />
-                  </SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="Select payment method" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="cod">💵 Cash on Delivery</SelectItem>
                   </SelectContent>
                 </Select>
-                <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                  <p className="text-amber-800 text-sm font-medium">💳 For online payment (JazzCash/Easypaisa)</p>
-                  <p className="text-amber-700 text-sm mt-1">
-                    Contact us on WhatsApp:{" "}
-                    <a
-                      href="https://wa.me/923304462277"
-                      className="font-semibold text-green-600 hover:text-green-700 underline"
-                    >
-                      +92 330-4462277
-                    </a>
-                  </p>
+                <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700">
+                  💳 For online payment (JazzCash/Easypaisa) contact us on{" "}
+                  <a href="https://wa.me/923304462277" className="text-green-600 underline">+92 330-4462277</a>
                 </div>
               </CardContent>
             </Card>
@@ -272,73 +237,40 @@ export default function CheckoutPage() {
           {/* Right: Order Summary */}
           <div className="space-y-6">
             <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2 text-slate-800">
-                  <ShoppingBag className="w-5 h-5 text-purple-600" />
-                  Order Summary
-                </CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle>Order Summary</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 {productData.length > 0 ? (
                   productData.map((item, index) => (
-                    <div
-                      key={item._id}
-                      className="flex items-center gap-4 p-3 bg-slate-50 rounded-lg border border-slate-100"
-                    >
-                      <img
-                        src={item.images?.[0] || "/placeholder.png"}
-                        alt={item.title}
-                        className="w-16 h-16 object-cover rounded-md border-2 border-white shadow-sm"
-                      />
+                    <div key={item._id} className="flex items-center gap-4 p-3 bg-slate-50 rounded-lg">
+                      <img src={item.images?.[0] || "/placeholder.png"} alt={item.title} className="w-16 h-16 object-cover rounded-md" />
                       <div className="flex-1">
-                        <p className="font-semibold text-slate-800 text-sm">{item.title}</p>
-                        <div className="flex items-center gap-4 mt-1">
-                          <span className="text-xs text-slate-600 bg-blue-100 px-2 py-1 rounded">
-                            Qty: {quantity[index] ?? 1} × Rs {item.discountedPrice}
-                          </span>
-                          <span className="text-xs text-slate-600 bg-green-100 px-2 py-1 rounded">
-                            Shipping: Rs {item.shipping_price || 0}
-                          </span>
-                        </div>
+                        <p className="font-semibold">{item.title}</p>
+                        <p className="text-xs text-slate-600">
+                          Qty: {quantity[index] ?? 1} × Rs {item.discountedPrice} + Ship Rs {item.shipping_price || 0}
+                        </p>
                       </div>
-                      <div className="text-right">
-                        <div className="text-sm font-bold text-slate-800">
-                          Rs {(item.discountedPrice * (quantity[index] ?? 1) + (item.shipping_price || 0)).toFixed(2)}
-                        </div>
+                      <div className="text-right font-bold text-slate-800">
+                        Rs {(item.discountedPrice * (quantity[index] ?? 1) + (item.shipping_price || 0)).toFixed(2)}
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className="text-center p-6 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-red-600 text-sm font-medium">⚠️ Error loading products</p>
-                    <p className="text-red-500 text-sm mt-1">
-                      Contact us on WhatsApp:{" "}
-                      <a
-                        href="https://wa.me/923304462277"
-                        className="font-semibold text-green-600 hover:text-green-700 underline"
-                      >
-                        +92 330-4462277
-                      </a>
-                    </p>
-                  </div>
+                  <div className="text-center text-red-500">⚠️ Error loading products</div>
                 )}
 
-                <div className="border-t border-slate-200 pt-4 mt-4">
-                  <div className="flex justify-between items-center p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-100">
-                    <span className="text-lg font-bold text-slate-800">Total Amount</span>
-                    <span className="text-xl font-bold text-blue-600">Rs {total.toFixed(2)}</span>
-                  </div>
+                <div className="border-t pt-4 flex justify-between font-bold text-slate-800">
+                  <span>Total Amount</span>
+                  <span className="text-blue-600">Rs {total.toFixed(2)}</span>
                 </div>
               </CardContent>
             </Card>
 
             <Button
-              className="w-full h-12 bg-gradient-to-r from-gray-900 to-gray-700 hover:from-black hover:to-gray-800 text-white font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl"
+              className="w-full h-12 bg-gradient-to-r from-gray-900 to-gray-700 text-white text-lg font-semibold rounded-xl"
               onClick={placeOrder}
             >
               🛒 Place Order - Rs {total.toFixed(2)}
             </Button>
-
           </div>
         </div>
       </div>
