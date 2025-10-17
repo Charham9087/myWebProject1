@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { GetCatalogueWithProducts } from "@/server/catalogue-functions";
 import { ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import Image from "next/image";
 
 export default function Catalogues() {
   const [catalogueData, setCatalogueData] = useState([]);
@@ -14,8 +15,14 @@ export default function Catalogues() {
   const [loading, setLoading] = useState(true);
   const [itemsPerView, setItemsPerView] = useState(1);
   const router = useRouter();
-
   const minSwipeDistance = 50;
+
+  // ✅ Safe fbq event trigger
+  const trackPixelEvent = (eventName, data = {}) => {
+    if (typeof fbq === "function") {
+      fbq("track", eventName, data);
+    }
+  };
 
   // ✅ Load cart from localStorage
   useEffect(() => {
@@ -39,7 +46,7 @@ export default function Catalogues() {
     fetchData();
   }, []);
 
-  // ✅ Add to cart
+  // ✅ Add to cart + fbq event
   const handleAddToCart = (product) => {
     const existingCart = JSON.parse(localStorage.getItem("cartItems")) || [];
     const existingItem = existingCart.find((item) => item._id === product._id);
@@ -55,17 +62,8 @@ export default function Catalogues() {
       updatedCart = [
         ...existingCart,
         {
-          name: product.name,
-          discountedPrice: product.discountedPrice,
-          originalPrice: product.originalPrice,
-          images: product.images,
-          _id: product._id,
-          id: product._id,
-          title: product.title,
-          categories: product.categories,
-          description: product.description,
+          ...product,
           quantity: 1,
-          catalogues: product.catalogues,
         },
       ];
     }
@@ -73,10 +71,26 @@ export default function Catalogues() {
     setCartItems(updatedCart);
     localStorage.setItem("cartItems", JSON.stringify(updatedCart));
     toast.success("Added to cart successfully", { position: "top-center" });
+
+    // ✅ Track AddToCart
+    trackPixelEvent("AddToCart", {
+      content_name: product.title,
+      content_ids: [product._id],
+      content_type: "product",
+      value: product.discountedPrice,
+      currency: "PKR",
+    });
   };
 
-  // ✅ View details
-  const handleViewDetails = (id) => {
+  // ✅ View details + fbq event
+  const handleViewDetails = (id, product) => {
+    trackPixelEvent("ViewContent", {
+      content_name: product.title,
+      content_ids: [product._id],
+      content_type: "product",
+      value: product.discountedPrice,
+      currency: "PKR",
+    });
     setLoading(true);
     setTimeout(() => {
       router.push(`/viewDetails?_id=${id}`);
@@ -97,12 +111,19 @@ export default function Catalogues() {
     return () => window.removeEventListener("resize", updateItemsPerView);
   }, []);
 
-  // ✅ Buy Now
+  // ✅ Buy Now + fbq event
   const handleBuyNow = (product) => {
+    trackPixelEvent("InitiateCheckout", {
+      content_name: product.title,
+      content_ids: [product._id],
+      content_type: "product",
+      value: product.discountedPrice,
+      currency: "PKR",
+    });
     window.location.href = `/checkoutPage?_id=${product._id}`;
   };
 
-  // ✅ Per-catalogue carousel component
+  // ✅ Carousel Component
   const CatalogueCarousel = ({ catalogue }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isAutoPlaying, setIsAutoPlaying] = useState(true);
@@ -171,33 +192,33 @@ export default function Catalogues() {
               transform: `translateX(-${currentIndex * (100 / itemsPerView)}%)`,
             }}
           >
-            {catalogue.products.map((product) => (
+            {catalogue.products.map((product, index) => (
               <div
                 key={product._id}
                 className="flex-shrink-0 px-2"
                 style={{ width: `${100 / itemsPerView}%` }}
               >
                 <Card
-                  onClick={() => handleViewDetails(product._id)}
+                  onClick={() => handleViewDetails(product._id, product)}
                   className="group h-full overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-card border-border shadow-sm cursor-pointer"
                 >
                   <CardContent className="flex flex-col h-full p-0">
                     <div className="relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900">
                       <div className="aspect-[4/3] relative">
-                        <img
+                        <Image
                           src={
                             Array.isArray(product.images)
                               ? product.images[0]
-                              : product.images ||
-                                "/placeholder.svg?height=300&width=400"
+                              : product.images || "/placeholder.svg"
                           }
                           alt={product.title}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
-                          loading="lazy"
-                          onError={(e) => {
-                            e.currentTarget.src =
-                              "/diverse-products-still-life.png";
-                          }}
+                          fill
+                          className="object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          priority={index < 2}
+                          loading={index < 2 ? "eager" : "lazy"}
+                          placeholder="blur"
+                          blurDataURL="/placeholder-blur.jpg"
                         />
                       </div>
 
@@ -286,40 +307,14 @@ export default function Catalogues() {
         🛒 Explore Our Catalogues
       </h1>
 
-      {/* 🔄 Fancy Loading Popup */}
       {loading && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50">
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-2xl border border-gray-200 dark:border-gray-700 max-w-sm mx-4">
-            <div className="flex flex-col items-center space-y-4">
-              <div className="relative">
-                <div className="w-16 h-16 border-4 border-gray-200 dark:border-gray-600 rounded-full"></div>
-                <div className="absolute top-0 left-0 w-16 h-16 border-4 border-transparent border-t-blue-500 border-r-blue-500 rounded-full animate-spin"></div>
-              </div>
-
-              <div className="text-center">
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                  Loading Products
-                </h3>
-                <div className="flex items-center justify-center space-x-1">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
-                  <div
-                    className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"
-                    style={{ animationDelay: "0.1s" }}
-                  ></div>
-                  <div
-                    className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"
-                    style={{ animationDelay: "0.2s" }}
-                  ></div>
-                </div>
-              </div>
-
-              <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2 overflow-hidden">
-                <div className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full animate-pulse"></div>
-              </div>
-
-              <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
-                Please wait while we fetch the latest products...
-              </p>
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4 text-center">
+              Loading Products...
+            </h3>
+            <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2 overflow-hidden">
+              <div className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full animate-pulse"></div>
             </div>
           </div>
         </div>

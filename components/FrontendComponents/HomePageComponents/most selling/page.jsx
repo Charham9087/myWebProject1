@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { ChevronLeft, ChevronRight, ShoppingBag } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -10,14 +11,19 @@ export default function MostSellingPage() {
   const [mostSellingProducts, setMostSellingProducts] = useState([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [itemsPerView, setItemsPerView] = useState(1)
-
-  // ✅ autoplay
   const [isAutoPlaying, setIsAutoPlaying] = useState(true)
-
-  // ✅ swipe states
   const [touchStart, setTouchStart] = useState(null)
   const [touchEnd, setTouchEnd] = useState(null)
   const minSwipeDistance = 50
+
+  // ✅ Pixel event helper (safe check)
+  const trackPixelEvent = (eventName, data = {}) => {
+    if (typeof window !== "undefined" && typeof fbq === "function") {
+      fbq("track", eventName, data)
+    } else {
+      console.log(`FB Event [${eventName}]`, data)
+    }
+  }
 
   useEffect(() => {
     async function fetchMostSellingProducts() {
@@ -40,61 +46,72 @@ export default function MostSellingPage() {
     return () => window.removeEventListener("resize", updateItemsPerView)
   }, [])
 
-  // ✅ autoplay effect
+  // ✅ autoplay
   useEffect(() => {
     if (!isAutoPlaying || mostSellingProducts.length <= itemsPerView) return
-    const interval = setInterval(() => {
-      nextSlide()
-    }, 5000)
+    const interval = setInterval(() => nextSlide(), 5000)
     return () => clearInterval(interval)
   }, [isAutoPlaying, currentIndex, mostSellingProducts, itemsPerView])
 
   const maxIndex = Math.max(0, mostSellingProducts.length - itemsPerView)
+  const nextSlide = () => setCurrentIndex((prev) => (prev >= maxIndex ? 0 : prev + 1))
+  const prevSlide = () => setCurrentIndex((prev) => (prev <= 0 ? maxIndex : prev - 1))
 
-  const nextSlide = () => {
-    setCurrentIndex((prev) => (prev >= maxIndex ? 0 : prev + 1))
-  }
+  const handleViewDetails = (id, product) => {
+    // ✅ Fire view event
+    trackPixelEvent("ViewContent", {
+      content_name: product.title,
+      content_ids: [product._id],
+      content_type: "product",
+      value: product.discountedPrice,
+      currency: "PKR",
+    })
 
-  const prevSlide = () => {
-    setCurrentIndex((prev) => (prev <= 0 ? maxIndex : prev - 1))
-  }
-
-  const handleViewDetails = (id) => {
     window.location.href = `/viewDetails?_id=${id}`
   }
 
   const handleAddToCart = (product) => {
     const existingCart = JSON.parse(localStorage.getItem("cartItems")) || []
     const existingItem = existingCart.find((item) => item._id === product._id)
-
-    let updatedCart
-    if (existingItem) {
-      updatedCart = existingCart.map((item) =>
-        item._id === product._id ? { ...item, quantity: item.quantity + 1 } : item,
-      )
-    } else {
-      updatedCart = [...existingCart, { ...product, quantity: 1 }]
-    }
+    const updatedCart = existingItem
+      ? existingCart.map((item) =>
+          item._id === product._id ? { ...item, quantity: item.quantity + 1 } : item
+        )
+      : [...existingCart, { ...product, quantity: 1 }]
 
     localStorage.setItem("cartItems", JSON.stringify(updatedCart))
+
+    // ✅ Fire add-to-cart event
+    trackPixelEvent("AddToCart", {
+      content_name: product.title,
+      content_ids: [product._id],
+      content_type: "product",
+      value: product.discountedPrice,
+      currency: "PKR",
+    })
+
     alert("Added to cart successfully!")
   }
 
   const handleBuyNow = (product) => {
+    // ✅ Fire checkout event
+    trackPixelEvent("InitiateCheckout", {
+      content_name: product.title,
+      content_ids: [product._id],
+      value: product.discountedPrice,
+      currency: "PKR",
+    })
+
     window.location.href = `/checkoutPage?_id=${product._id}`
   }
 
-  // ✅ swipe handlers
+  // ✅ swipe
   const onTouchStart = (e) => {
     setTouchEnd(null)
     setTouchStart(e.targetTouches[0].clientX)
     setIsAutoPlaying(false)
   }
-
-  const onTouchMove = (e) => {
-    setTouchEnd(e.targetTouches[0].clientX)
-  }
-
+  const onTouchMove = (e) => setTouchEnd(e.targetTouches[0].clientX)
   const onTouchEnd = () => {
     if (!touchStart || !touchEnd) return
     const distance = touchStart - touchEnd
@@ -134,38 +151,45 @@ export default function MostSellingPage() {
           className="flex transition-transform duration-500 ease-in-out gap-4"
           style={{ transform: `translateX(-${currentIndex * (100 / itemsPerView)}%)` }}
         >
-          {mostSellingProducts.map((product) => (
+          {mostSellingProducts.map((product, index) => (
             <div key={product._id} className="flex-shrink-0 px-2" style={{ width: `${100 / itemsPerView}%` }}>
               <Card
-                onClick={() => handleViewDetails(product._id)}
+                onClick={() => handleViewDetails(product._id, product)}
                 className="group h-full overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer"
               >
                 <CardContent className="flex flex-col h-full p-0">
                   <div className="relative bg-gray-50 dark:bg-gray-900">
-                    <div className="aspect-[4/3] flex items-center justify-center">
-                      <img
+                    <div className="aspect-[4/3] flex items-center justify-center relative w-full">
+                      <Image
                         src={product.images?.[0] || "/placeholder.svg"}
                         alt={product.title}
-                        className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-700"
+                        fill
+                        className="object-contain group-hover:scale-105 transition-transform duration-700"
+                        priority={index < itemsPerView}
+                        loading={index < itemsPerView ? "eager" : "lazy"}
+                        placeholder="blur"
+                        blurDataURL="/placeholder-blur.jpg"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                        onError={(e) => (e.target.src = "/product-placeholder.jpg")}
                       />
                     </div>
+
                     {product.originalPrice > product.discountedPrice && (
                       <div className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                        {Math.round(((product.originalPrice - product.discountedPrice) / product.originalPrice) * 100)}% OFF
+                        {Math.round(
+                          ((product.originalPrice - product.discountedPrice) / product.originalPrice) * 100
+                        )}
+                        % OFF
                       </div>
                     )}
                   </div>
 
                   <div className="flex flex-col flex-grow p-4 space-y-3">
-                    <h3 className="font-semibold text-lg leading-tight line-clamp-2">
-                      {product.title}
-                    </h3>
+                    <h3 className="font-semibold text-lg leading-tight line-clamp-2">{product.title}</h3>
 
                     {/* Pricing */}
                     <div className="flex items-center gap-2">
-                      <span className="text-xl font-bold text-green-600">
-                        Rs.{product.discountedPrice}
-                      </span>
+                      <span className="text-xl font-bold text-green-600">Rs.{product.discountedPrice}</span>
                       {product.originalPrice > product.discountedPrice && (
                         <span className="text-sm text-muted-foreground line-through">
                           Rs.{product.originalPrice}
@@ -174,14 +198,23 @@ export default function MostSellingPage() {
                     </div>
 
                     <div className="flex flex-col gap-2 mt-auto pt-2">
-                      <Button className="w-full" onClick={(e) => { e.stopPropagation(); handleBuyNow(product) }}>
+                      <Button
+                        className="w-full"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleBuyNow(product)
+                        }}
+                      >
                         <ShoppingBag className="w-4 h-4 mr-2" />
                         Buy Now
                       </Button>
                       <Button
                         variant="outline"
                         className="w-full"
-                        onClick={(e) => { e.stopPropagation(); handleAddToCart(product) }}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleAddToCart(product)
+                        }}
                       >
                         Add to Cart
                       </Button>
@@ -194,7 +227,7 @@ export default function MostSellingPage() {
         </div>
       </div>
 
-      {/* Dots indicator */}
+      {/* Dots */}
       <div className="flex justify-center gap-2 mt-6">
         {Array.from({ length: Math.max(1, mostSellingProducts.length - itemsPerView + 1) }).map((_, index) => (
           <button

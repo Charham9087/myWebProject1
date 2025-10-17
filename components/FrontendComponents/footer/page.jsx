@@ -50,7 +50,7 @@ export default function Footer() {
 
           <div className="flex gap-4 mt-3 text-xl">
             <a href="https://www.facebook.com/share/16wSjmMmpD/" target="_blank" className="hover:text-white transition-colors"><FaFacebook /></a>
-            <a href="https://www.instagram.com/gharipoint/?utm_source=ig_web_button_share_sheet" target="_blank" className="hover:text-white transition-colors"><FaInstagram /></a>
+            <a href="https://www.instagram.com/ghari.point/?utm_source=ig_web_button_share_sheet" target="_blank" className="hover:text-white transition-colors"><FaInstagram /></a>
             <a href="https://wa.me/923304462277" className="hover:text-white transition-colors"><FaWhatsapp /></a>
           </div>
         </div>

@@ -8,6 +8,20 @@ import ViewProduct from "@/server/viewProduct"
 import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
 
+// ✅ Simple event tracker for analytics (lightweight + async)
+const trackEvent = async (eventName, details = {}) => {
+  try {
+    // Send event in background (non-blocking)
+    fetch("/api/track-event", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ eventName, details, timestamp: Date.now() }),
+    })
+  } catch (err) {
+    console.warn("Event tracking failed:", err)
+  }
+}
+
 export default function ViewProductPage() {
   const searchParams = useSearchParams()
   const _id = searchParams.get("_id")
@@ -35,25 +49,27 @@ export default function ViewProductPage() {
   const handlePrevImage = () => {
     setSelectedImage((prev) => (prev > 0 ? prev - 1 : prev))
   }
+
   const handleShare = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href)
       toast.success("Link copied to clipboard!", { position: "top-center" })
+      trackEvent("Product Shared", { productId: _id, title: productdata.title })
     } catch (error) {
-      // Agar clipboard API fail ho jaye, to prompt se dikhado
       const url = window.location.href
       prompt("Copy this link:", url)
     }
   }
-
 
   useEffect(() => {
     async function fetchProductData() {
       if (!_id) return
       try {
         const res = await ViewProduct({ _id })
-        if (res) setProductdata(res)
-        else console.warn("Product not found")
+        if (res) {
+          setProductdata(res)
+          trackEvent("Product Viewed", { productId: _id, title: res.title })
+        } else console.warn("Product not found")
       } catch (error) {
         console.error("Failed to fetch product data:", error)
       }
@@ -92,9 +108,20 @@ export default function ViewProductPage() {
     setcartItems(updatedCart)
     localStorage.setItem("cartItems", JSON.stringify(updatedCart))
     toast.success("Added to cart successfully", { position: "top-center" })
+
+    // ✅ Track add-to-cart event
+    trackEvent("Add to Cart", {
+      productId: productdata._id,
+      title: productdata.title,
+      quantity,
+      price: productdata.discountedPrice,
+    })
   }
 
-  
+  const handleBuyNow = () => {
+    router.push(`/../checkoutPage?_id=${_id}`)
+    trackEvent("Buy Now Clicked", { productId: _id, title: productdata.title })
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-4 sm:py-8">
@@ -134,6 +161,7 @@ export default function ViewProductPage() {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8 bg-white dark:bg-gray-900 rounded-2xl sm:rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-200/50 dark:border-gray-700/50">
+          {/* Left - Image Gallery */}
           <div className="relative">
             <div
               className="relative flex justify-center items-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 p-4 sm:p-8 cursor-zoom-in group min-h-[300px] sm:min-h-[500px]"
@@ -153,43 +181,6 @@ export default function ViewProductPage() {
                       <div className="absolute inset-0 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-xl sm:rounded-2xl" />
                     )}
                   </div>
-                  {productdata.images.length > 1 && (
-                    <>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handlePrevImage()
-                        }}
-                        className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm text-gray-800 dark:text-white rounded-full p-2 sm:p-3 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-200 opacity-0 group-hover:opacity-100"
-                      >
-                        <ChevronLeft size={16} className="sm:w-5 sm:h-5" />
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleNextImage()
-                        }}
-                        className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm text-gray-800 dark:text-white rounded-full p-2 sm:p-3 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-200 opacity-0 group-hover:opacity-100"
-                      >
-                        <ChevronRight size={16} className="sm:w-5 sm:h-5" />
-                      </button>
-                    </>
-                  )}
-                  <div className="absolute bottom-2 sm:bottom-4 left-1/2 -translate-x-1/2 flex gap-1 sm:gap-2">
-                    {productdata.images.map((_, idx) => (
-                      <button
-                        key={idx}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setSelectedImage(idx)
-                        }}
-                        className={`h-1.5 sm:h-2 rounded-full transition-all duration-300 ${selectedImage === idx
-                            ? "bg-blue-600 w-6 sm:w-8"
-                            : "bg-white/60 w-1.5 sm:w-2 hover:bg-white/80"
-                          }`}
-                      />
-                    ))}
-                  </div>
                 </>
               ) : (
                 <div className="flex flex-col items-center justify-center text-gray-500 dark:text-gray-400">
@@ -198,28 +189,9 @@ export default function ViewProductPage() {
                 </div>
               )}
             </div>
-            {productdata.images?.length > 1 && (
-              <div className="flex gap-1 sm:gap-2 p-2 sm:p-4 overflow-x-auto">
-                {productdata.images.map((image, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setSelectedImage(idx)}
-                    className={`flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-lg overflow-hidden border-2 transition-all duration-200 ${selectedImage === idx
-                        ? "border-blue-600 shadow-lg scale-105"
-                        : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
-                      }`}
-                  >
-                    <img
-                      src={image || "/placeholder.svg"}
-                      alt={`Thumbnail ${idx + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
 
+          {/* Right - Product Info */}
           <div className="flex flex-col justify-between p-4 sm:p-8 space-y-4 sm:space-y-6">
             <div className="space-y-3 sm:space-y-4">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
@@ -278,6 +250,7 @@ export default function ViewProductPage() {
               </div>
             </div>
 
+            {/* Quantity Selector */}
             <div className="space-y-3 sm:space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                 <span className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">Quantity:</span>
@@ -299,14 +272,12 @@ export default function ViewProductPage() {
                   </button>
                 </div>
               </div>
-
             </div>
 
+            {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 pt-4">
               <Button
-                onClick={() => {
-                  router.push(`/../checkoutPage?_id=${_id}`)
-                }}
+                onClick={handleBuyNow}
                 className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 px-4 sm:px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 flex items-center justify-center gap-2 text-sm sm:text-base"
               >
                 <Zap size={16} className="sm:w-[18px] sm:h-[18px]" />
