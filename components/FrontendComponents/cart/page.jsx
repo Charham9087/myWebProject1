@@ -1,4 +1,5 @@
 "use client"
+import dynamic from "next/dynamic"
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -8,10 +9,9 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@
 import toast from "react-hot-toast"
 import { useRouter, useSearchParams } from "next/navigation"
 import { getCheckout, saveCheckout } from "@/server/checkout"
-import crypto from "crypto"
 import { ShoppingBag, CreditCard, MapPin, Phone, Mail, User } from "lucide-react"
 
-export default function CheckoutPage() {
+function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState("cod")
   const [productData, setProductData] = useState([])
   const [quantity, setQuantity] = useState({})
@@ -20,7 +20,6 @@ export default function CheckoutPage() {
   const router = useRouter()
   const _id = searchParams.get("_id")
 
-  // ✅ Calculate total including shipping
   const total = productData.reduce((sum, item, index) => {
     const qty = quantity[index] > 0 ? quantity[index] : 1
     const price = item?.discountedPrice || 0
@@ -35,7 +34,7 @@ export default function CheckoutPage() {
     postal: "",
     email: "",
     phone: "",
-    comments: "",  // ✅ Added comments field
+    comments: "",
     orderID: "",
     productID: _id || "",
     total: 0,
@@ -51,7 +50,6 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     if (!_id) return
-
     const cart = localStorage.getItem("cartItems")
     if (cart) {
       const parsedCart = JSON.parse(cart)
@@ -77,12 +75,12 @@ export default function CheckoutPage() {
   const handleChange = (e) => {
     setForm({ ...form, [e.target.id]: e.target.value })
   }
-  // ✅ Generate Order ID (browser-safe)
-  const generateOrderID = () => "ORD-" + Math.floor(Math.random() * 1e9);
+
+  const generateOrderID = () => "ORD-" + Math.floor(Math.random() * 1e9)
 
   const placeOrder = () => {
-    const newOrderID = generateOrderID();
-    setOrderID(newOrderID);
+    const newOrderID = generateOrderID()
+    setOrderID(newOrderID)
 
     const { name, address, city, email, phone } = form
     const isEmpty = [name, address, city, email, phone].some((value) => value.trim() === "")
@@ -345,3 +343,5 @@ export default function CheckoutPage() {
     </div>
   )
 }
+
+export default dynamic(() => Promise.resolve(CheckoutPage), { ssr: false })
