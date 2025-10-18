@@ -16,10 +16,8 @@ export async function ShowOrderPageData() {
     const ordersFromDB = await Orders.find({}).lean();
     const serializableOrders = JSON.parse(JSON.stringify(ordersFromDB));
 
-    return serializableOrders.map((order) => {
-      const { _id, ...rest } = order;
-      return { ...rest, orderID: _id };
-    });
+    return serializableOrders
+    
   } catch (error) {
     console.error("Error fetching orders:", error);
     return [];

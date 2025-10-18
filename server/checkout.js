@@ -176,27 +176,23 @@ export async function getCheckout(_id) {
   await ConnectDB();
   console.log("connected to DB Successfully")
 
-  // Split in case _id comes as "id1,id2,id3"
-  const ids = _id.split(',');
+  // Normalize ID(s)
+  const ids = Array.isArray(_id) ? _id : _id.includes(',') ? _id.split(',') : [_id];
 
-  // Find products and convert to plain objects
+  // Fetch products
   const data = await Products.find({ _id: { $in: ids } }).lean();
 
-  if (data) {
-    console.log('products found', data);
-
-    // ✅ Convert _id from ObjectId to string
-    const plainData = data.map(item => ({
-      ...item,
-      _id: item._id.toString()
-    }));
-
-    return plainData;
-  } else {
-    console.log("data not found in DB");
+  if (!data || data.length === 0) {
+    console.log("No products found in DB");
     return [];
   }
+
+  console.log('Products found:', data);
+
+  // Convert ObjectIds to strings
+  return data.map(item => ({ ...item, _id: item._id.toString() }));
 }
+
 
 
 

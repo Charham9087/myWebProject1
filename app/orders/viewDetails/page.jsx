@@ -147,7 +147,7 @@ export default function AdminViewOrderPage() {
         </Button>
         <h1 className="text-2xl font-bold">Order Details</h1>
         <Badge variant="secondary" className="text-xs">
-          ID: {order._id}
+          ID: {_id}
         </Badge>
         {order.status && (
           <Badge
