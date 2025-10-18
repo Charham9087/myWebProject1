@@ -255,7 +255,7 @@ export default function CheckoutPage() {
                     </div>
                   ))
                 ) : (
-                  <div className="text-center text-red-500">⚠️ Error loading products</div>
+                  <div className="text-center text-red-500">🔃 loading products  <br> Please Wait....</br></div>
                 )}
 
                 <div className="border-t pt-4 flex justify-between font-bold text-slate-800">
