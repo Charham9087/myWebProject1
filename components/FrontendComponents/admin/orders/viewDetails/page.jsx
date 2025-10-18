@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,21 +11,18 @@ import Image from "next/image";
 import { ArrowLeft, AlertCircle } from "lucide-react";
 import { ViewOrderDetailFromDB } from "@/server/orders";
 
-export default function AdminViewOrderPage() {
+export default function AdminViewOrderPage({ orderId }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const pathname = usePathname();
 
   const [order, setOrder] = useState(null);
   const [ProductData, setProductData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Extract the _id param
-  const _id = searchParams.get("_id");
-
   useEffect(() => {
     async function fetchOrderDetails() {
-      if (!_id) {
+      if (!orderId) {
         setError("No order ID provided.");
         setLoading(false);
         return;
@@ -34,7 +31,7 @@ export default function AdminViewOrderPage() {
       try {
         setLoading(true);
         setError(null);
-        const result = await ViewOrderDetailFromDB(_id);
+        const result = await ViewOrderDetailFromDB(orderId);
 
         if (!result?.orderData) {
           throw new Error("Order not found");
@@ -63,7 +60,7 @@ export default function AdminViewOrderPage() {
     }
 
     fetchOrderDetails();
-  }, [_id]);
+  }, [orderId]);
 
   const handleGoBack = () => {
     router.back();
@@ -147,7 +144,7 @@ export default function AdminViewOrderPage() {
         </Button>
         <h1 className="text-2xl font-bold">Order Details</h1>
         <Badge variant="secondary" className="text-xs">
-          ID: {order._id}
+          ID: {orderId}
         </Badge>
         {order.status && (
           <Badge
@@ -167,7 +164,7 @@ export default function AdminViewOrderPage() {
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           <div className="space-y-2">
-            <p><strong>Order ID:</strong> {order.orderID}</p>
+            <p><strong>Order ID:</strong> {order.orderId}</p>
             <p><strong>Customer:</strong> {order.name}</p>
             <p><strong>Email:</strong> {order.email}</p>
             <p><strong>Phone:</strong> {order.phone}</p>
@@ -191,7 +188,7 @@ export default function AdminViewOrderPage() {
 
       {/* Products Ordered */}
       {ProductData.map((prod, index) => (
-        <Card key={prod.id ?? index}>
+        <Card key={prod.id || index}>
           <CardHeader>
             <CardTitle className="text-lg">Product Ordered</CardTitle>
           </CardHeader>
@@ -199,8 +196,8 @@ export default function AdminViewOrderPage() {
             <div className="flex gap-6 items-start">
               <div className="w-32 h-32 relative flex-shrink-0">
                 <Image
-                  src={prod.images?.[0] ?? "/placeholder.svg?height=128&width=128"}
-                  alt={prod.title ?? "Product image"}
+                  src={prod.images[0] || "/placeholder.svg?height=128&width=128"}
+                  alt={prod.title || "Product image"}
                   fill
                   className="object-cover rounded-lg border"
                 />
@@ -214,19 +211,21 @@ export default function AdminViewOrderPage() {
                   </div>
                   <div>
                     <p className="text-muted-foreground">Quantity</p>
-                    <p className="font-medium">{order?.quantity ?? 1}</p>
+                    <p className="font-medium">{order?.quantity || 1}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Subtotal</p>
                     <p className="font-medium">
-                      Rs {prod.discountedPrice * (order?.quantity ?? 1)}
+                      Rs {prod.discountedPrice * (order?.quantity || 1)}
                     </p>
                     {prod.shipping_price > 0 ? (
                       <p className="text-sm text-muted-foreground">
                         + Shipping: Rs {prod.shipping_price}
                       </p>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">+ Shipping: Rs 0</p>
+                    ):(
+                         <p className="text-sm text-muted-foreground">
+                        + Shipping: Rs.0
+                      </p>
                     )}
                   </div>
                 </div>
@@ -243,15 +242,15 @@ export default function AdminViewOrderPage() {
             <span>Products Total:</span>
             <span>Rs {order.total - (order.shippingCost || 0)}</span>
           </div>
-          {order.shippingCost > 0 ? (
+          {ProductData.shipping_price > 0 ? (
             <div className="flex justify-between items-center text-lg">
               <span>Shipping:</span>
-              <span>Rs {order.shippingCost}</span>
+              <span>Rs {ProductData.shipping_price}</span>
             </div>
           ) : (
             <div className="flex justify-between items-center text-lg">
               <span>Shipping:</span>
-              <span>Rs 0</span>
+              <span>Rs.0</span>
             </div>
           )}
           <div className="flex justify-between items-center text-lg font-semibold border-t pt-2">
