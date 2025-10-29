@@ -5,74 +5,76 @@ import Products from "@/components/models/products";
 import nodemailer from "nodemailer";
 
 export async function saveCheckout(data) {
-  console.log("RECEIVED DATA FROM FRONTEND", data);
-  await ConnectDB();
-  console.log("connected to DB successfully");
+  try {
+    console.log("RECEIVED DATA FROM FRONTEND", data);
+    await ConnectDB();
+    console.log("connected to DB successfully");
 
-  const {
-    name,
-    email,
-    phone,
-    address,
-    city,
-    postal,
-    comments,
-    productID,  // for normal checkout
-    products,   // for admin checkout
-    orderID,
-    total,
-  } = data;
+    const {
+      name,
+      email,
+      phone,
+      address,
+      city,
+      postal,
+      comments,
+      productID, // for normal checkout
+      products, // for admin checkout
+      orderID,
+      total,
+    } = data;
 
-  // ✅ Handle both types of data (productID string OR products array)
-  let finalProducts = [];
+    // validate basic required fields
+    if (!name || !phone || !address || !city || !email) {
+      return { success: false, error: "Missing required fields" };
+    }
 
-  if (Array.isArray(products) && products.length > 0) {
-    // Admin Checkout – full product details
-    finalProducts = products.map((p) => ({
-      id: p._id,
-      name: p.name,
-      quantity: p.quantity,
-      price: Number(p.manualPrice) || 0,
-    }));
-  } else if (productID) {
-    // Normal Checkout – just IDs
-    finalProducts = productID.split(",").map((id) => ({ id }));
-  }
+    // Build finalProducts
+    let finalProducts = [];
+    if (Array.isArray(products) && products.length > 0) {
+      finalProducts = products.map((p) => ({
+        id: p._id || p.id,
+        name: p.name || p.title || "Unknown",
+        quantity: p.quantity || 1,
+        price: Number(p.manualPrice ?? p.price ?? p.discountedPrice) || 0,
+      }));
+    } else if (productID) {
+      finalProducts = productID.split(",").map((id) => ({ id }));
+    }
 
-  // ✅ Save to DB
-  await orders.create({
-    name,
-    email,
-    phone,
-    address,
-    city,
-    postal,
-    comments,
-    productID: finalProducts.map((p) => p.id), // for backward compatibility
-    products: finalProducts,                   // full structured data
-    orderID,
-    total,
-  });
-
-  console.log("✅ Order saved to DB successfully");
-
-  // ✅ Send confirmation email to customer
-  async function sendEmail(email) {
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.User_ID,
-        pass: process.env.User_PASS,
-      },
+    // Save to DB (wrap in try/catch still)
+    const saved = await orders.create({
+      name,
+      email,
+      phone,
+      address,
+      city,
+      postal,
+      comments,
+      productID: finalProducts.map((p) => p.id),
+      products: finalProducts,
+      orderID,
+      total,
     });
 
-    await transporter.sendMail({
-      from: `"Ghari Point" <${process.env.User_ID}>`,
-      to: email,
-      subject: "Ghari Point - Your Order",
-      html: `
+    console.log("✅ Order saved to DB successfully", saved._id);
+
+    // Prepare transporter only if credentials exist
+    const hasEmailCreds = process.env.User_ID && process.env.User_PASS;
+    if (hasEmailCreds) {
+      try {
+        const transporter = nodemailer.createTransport({
+          service: "gmail",
+          port: 587,
+          secure: false,
+          auth: {
+            user: process.env.User_ID,
+            pass: process.env.User_PASS,
+          },
+        });
+
+        // send customer email (fire-and-forget but await to log)
+        const customerHtml = `
         <div style="font-family: Arial, sans-serif; background-color:#f9f9f9; padding:20px;">
     <div style="max-width:600px; margin:0 auto; background:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
       <div style="background:#000; color:#fff; text-align:center; padding:20px;">
@@ -118,58 +120,65 @@ export async function saveCheckout(data) {
       </div>
     </div>
   </div>
-`,
-    });
+`; // keep your existing HTML or build here
+        await transporter.sendMail({
+          from: `"Ghari Point" <${process.env.User_ID}>`,
+          to: email,
+          subject: "Ghari Point - Your Order",
+          html: customerHtml,
+        });
+        console.log("📩 Customer email sent successfully");
+      } catch (mailErr) {
+        console.error("❗ Customer email failed:", mailErr);
+        // do not throw — continue
+      }
 
-    console.log("📩 Customer email sent successfully");
+      try {
+        // send admin email
+        const productListHTML = finalProducts
+          .map((p) => `<li>${p.name || "Unknown"} — Qty: ${p.quantity || "-"} — Rs ${p.price || "-"}</li>`)
+          .join("");
+        const transporter2 = nodemailer.createTransport({
+          service: "gmail",
+          port: 587,
+          secure: false,
+          auth: {
+            user: process.env.User_ID,
+            pass: process.env.User_PASS,
+          },
+        });
+        await transporter2.sendMail({
+          from: `"Ghari Point" <${process.env.User_ID}>`,
+          to: "gharipoint@gmail.com",
+          subject: `New Order - ${orderID}`,
+          html: `
+            <h3>New Order Received</h3>
+            <p><b>Name:</b> ${name}</p>
+            <p><b>Email:</b> ${email}</p>
+            <p><b>Phone:</b> ${phone}</p>
+            <p><b>Address:</b> ${address}, ${city}, ${postal}</p>
+            <p><b>Total:</b> Rs. ${total}</p>
+            <p><b>Order ID:</b> ${orderID}</p>
+            <p><b>Comments:</b> ${comments || "None"}</p>
+            <h4>Products:</h4><ul>${productListHTML}</ul>
+          `,
+        });
+        console.log("📩 Admin email sent successfully");
+      } catch (mailErr2) {
+        console.error("❗ Admin email failed:", mailErr2);
+      }
+    } else {
+      console.log("⚠️ Email credentials not set. Skipping email sending.");
+    }
+
+    console.log("✅ saveCheckout() completed successfully");
+    return { success: true, orderId: saved._id, orderID: orderID || saved.orderID || null };
+  } catch (error) {
+    console.error("❌ saveCheckout error:", error);
+    // Return error object instead of throwing so client receives it
+    return { success: false, error: error.message || "Server error" };
   }
-  await sendEmail(email);
-
-  // ✅ Send admin notification email
-  async function sendAdminEmail() {
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.User_ID,
-        pass: process.env.User_PASS,
-      },
-    });
-
-    const productListHTML = finalProducts
-      .map(
-        (p) =>
-          `<li>${p.name || "Unknown"} — Qty: ${p.quantity || "-"} — Rs ${p.price || "-"}</li>`
-      )
-      .join("");
-
-    await transporter.sendMail({
-      from: `"Ghari Point" <${process.env.User_ID}>`,
-      to: "gharipoint@gmail.com",
-      subject: `New Order - ${orderID}`,
-      html: `
-        <h2>New Order Received</h2>
-        <p><b>Name:</b> ${name}</p>
-        <p><b>Email:</b> ${email}</p>
-        <p><b>Phone:</b> ${phone}</p>
-        <p><b>Address:</b> ${address}, ${city}, ${postal}</p>
-        <p><b>Total:</b> Rs. ${total}</p>
-        <p><b>Order ID:</b> ${orderID}</p>
-        <p><b>Comments:</b> ${comments || "None"}</p>
-        <h3>Products:</h3>
-        <ul>${productListHTML}</ul>
-      `,
-    });
-
-    console.log("📩 Admin email sent successfully");
-  }
-
-  await sendAdminEmail();
-
-  console.log("✅ saveCheckout() completed successfully");
 }
-
 
 export async function getCheckout(_id) {
   console.log("RECEIVED DATA FROM FRONTEND", _id)

@@ -64,14 +64,14 @@ export default function CheckoutPage() {
   // ✅ Fetch checkout product data
   useEffect(() => {
     if (!_id) return
-    ;(async () => {
-      try {
-        const data = await getCheckout(_id)
-        setProductData(data)
-      } catch (error) {
-        console.error("Error fetching checkout data:", error)
-      }
-    })()
+      ; (async () => {
+        try {
+          const data = await getCheckout(_id)
+          setProductData(data)
+        } catch (error) {
+          console.error("Error fetching checkout data:", error)
+        }
+      })()
   }, [_id])
 
   // ✅ Fire Meta Pixel InitiateCheckout when page loads
@@ -95,16 +95,17 @@ export default function CheckoutPage() {
 
   const generateOrderID = () => "ORD-" + Math.floor(Math.random() * 1e9)
 
-  const placeOrder = () => {
-    const newOrderID = generateOrderID()
-    setOrderID(newOrderID)
+  const placeOrder = async () => {
+    const newOrderID = generateOrderID();
+    setOrderID(newOrderID);
 
-    const { name, address, city, email, phone } = form
-    const isEmpty = [name, address, city, email, phone].some((value) => value.trim() === "")
+    const { name, address, city, email, phone } = form;
+    const isEmpty = [name, address, city, email, phone].some((value) => value.trim() === "");
     if (isEmpty) {
-      alert("Please fill in all fields before placing the order!")
-      return
+      alert("Please fill in all fields before placing the order!");
+      return;
     }
+
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
@@ -122,25 +123,38 @@ export default function CheckoutPage() {
       ...form,
       orderID: newOrderID,
       total,
-    }
+    };
 
-    // ✅ Fire Meta Pixel Purchase event
-    if (typeof window !== "undefined" && window.fbq) {
-      window.fbq("track", "Purchase", {
-        value: total,
-        currency: "PKR",
-        content_ids: productData.map((p) => p._id),
-        content_name: productData.map((p) => p.title).join(", "),
-        num_items: productData.length,
-        order_id: newOrderID,
-      })
-      console.log("🟢 Meta Pixel: Purchase fired", { total, orderID: newOrderID })
-    }
+    try {
+      // call server action and await result
+      const res = await saveCheckout(orderData);
 
-    saveCheckout(orderData)
-    toast.success("Order placed successfully!")
-    router.push("/")
-  }
+      // If saveCheckout returns an object (as patched above)
+      if (res && res.success) {
+        // Fire pixel after we get server confirmation (optional if you want pixel to reflect real order)
+        if (typeof window !== "undefined" && window.fbq) {
+          window.fbq("track", "Purchase", {
+            value: total,
+            currency: "PKR",
+            content_ids: productData.map((p) => p._id),
+            content_name: productData.map((p) => p.title).join(", "),
+            num_items: productData.length,
+            order_id: newOrderID,
+          });
+        }
+
+        toast.success("Order placed successfully!");
+        router.push("/");
+      } else {
+        console.error("Order failed:", res);
+        toast.error("Order failed: " + (res?.error || "Server error"));
+      }
+    } catch (err) {
+      console.error("Place order unexpected error:", err);
+      toast.error("Unexpected error placing order.");
+    }
+  };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-6">
@@ -255,7 +269,7 @@ export default function CheckoutPage() {
                     </div>
                   ))
                 ) : (
-                  <div className="text-center text-red-500">🔃 loading products  <br/> Please Wait....</div>
+                  <div className="text-center text-red-500">🔃 loading products  <br /> Please Wait....</div>
                 )}
 
                 <div className="border-t pt-4 flex justify-between font-bold text-slate-800">
