@@ -95,65 +95,67 @@ export default function CheckoutPage() {
 
   const generateOrderID = () => "ORD-" + Math.floor(Math.random() * 1e9)
 
-  const placeOrder = async () => {
-    const newOrderID = generateOrderID();
-    setOrderID(newOrderID);
+const placeOrder = async () => {
+  const newOrderID = generateOrderID();
+  setOrderID(newOrderID);
 
-    const { name, address, city, email, phone } = form;
-    const isEmpty = [name, address, city, email, phone].some((value) => value.trim() === "");
-    if (isEmpty) {
-      alert("Please fill in all fields before placing the order!");
+  const { name, address, city, email, phone } = form;
+  const isEmpty = [name, address, city, email, phone].some((value) => value.trim() === "");
+  if (isEmpty) {
+    toast.error("Please fill all required fields");
+    return;
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    toast.error("Invalid email format!");
+    return;
+  }
+
+  const phoneRegex = /^03\d{9}$/;
+  if (!phoneRegex.test(phone)) {
+    toast.error("Invalid Pakistani phone number!");
+    return;
+  }
+
+  const orderData = {
+    ...form,
+    orderID: newOrderID,
+    total,
+  };
+
+  try {
+    const response = await saveCheckout(orderData);
+
+    if (!response?.success) {
+      toast.error("Order failed: " + (response?.error || "Server error"));
       return;
     }
 
+    console.log("✅ Order Saved In DB");
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(email)) {
-      alert("Please enter a valid email address!")
-      return
+    // ✅ Fire Purchase AFTER backend success
+    if (typeof window !== "undefined" && window.fbq) {
+      window.fbq("track", "Purchase", {
+        value: total,
+        currency: "PKR",
+        content_ids: productData.map((p) => p._id),
+        content_name: productData.map((p) => p.title).join(", "),
+        num_items: productData.length,
+        order_id: newOrderID,
+      });
+      console.log("🟢 Meta Pixel: Purchase event fired AFTER DB success");
     }
 
-    const phoneRegex = /^03\d{9}$/
-    if (!phoneRegex.test(phone)) {
-      alert("Please enter a valid Pakistani phone number starting with 03!")
-      return
-    }
+    toast.success("✅ Order placed successfully!");
+    router.push("/");
+    
+  } catch (error) {
+    console.error("Unexpected Error:", error);
+    toast.error("Unexpected error placing order!");
+  }
+};
 
-    const orderData = {
-      ...form,
-      orderID: newOrderID,
-      total,
-    };
-
-    try {
-      // call server action and await result
-      const res = await saveCheckout(orderData);
-
-      // If saveCheckout returns an object (as patched above)
-      if (res && res.success) {
-        // Fire pixel after we get server confirmation (optional if you want pixel to reflect real order)
-        if (typeof window !== "undefined" && window.fbq) {
-          window.fbq("track", "Purchase", {
-            value: total,
-            currency: "PKR",
-            content_ids: productData.map((p) => p._id),
-            content_name: productData.map((p) => p.title).join(", "),
-            num_items: productData.length,
-            order_id: newOrderID,
-          });
-        }
-
-        toast.success("Order placed successfully!");
-        router.push("/");
-      } else {
-        console.error("Order failed:", res);
-        toast.error("Order failed: " + (res?.error || "Server error"));
-      }
-    } catch (err) {
-      console.error("Place order unexpected error:", err);
-      toast.error("Unexpected error placing order.");
-    }
-  };
 
 
   return (
