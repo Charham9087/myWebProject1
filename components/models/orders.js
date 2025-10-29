@@ -6,7 +6,7 @@ const OrdersSchema = new mongoose.Schema({
     phone: { type: String, required: true },
     address: { type: String, required: true },
     city: { type: String, required: true },
-    postal: { type: String, required: true },
+    postal: { type: String, required: false },
     comments: { type: String },
     total: { type: Number },
     productID: [{ type: String }], 
