@@ -1,4 +1,3 @@
-"use server"
 import ConnectDB from "@/components/mongoConnect";
 import User from "@/components/models/User";
 
