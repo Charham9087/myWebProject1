@@ -1,4 +1,5 @@
 'use client'
+export const dynamic = "force-dynamic";
 
 import AppSidebar from "@/components/FrontendComponents/admin/sidebar/page"
 import {
