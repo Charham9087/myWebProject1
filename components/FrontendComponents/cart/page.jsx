@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Image from "next/image"
 import { Trash2, ShoppingBag, Plus, Minus } from "lucide-react"
 import { useRouter } from "next/navigation"
 
@@ -116,12 +117,14 @@ export default function EnhancedCart() {
                   </div>
 
                   {/* Image */}
-                  <div className="flex-shrink-0">
-                    <img
+                  <div className="flex-shrink-0 relative w-20 h-20">
+                    <Image
                       src={item.images?.[0] || "/placeholder.svg"}
                       alt={item.name}
-                      className="w-20 h-20 object-cover rounded-lg border"
+                      fill
+                      className="object-cover rounded-lg border"
                       onClick={(e) => e.stopPropagation()}
+                      sizes="80px"
                     />
                   </div>
 

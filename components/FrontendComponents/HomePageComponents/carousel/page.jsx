@@ -108,15 +108,15 @@ export default function Carousel() {
           >
             <div className="absolute inset-0">
               <Image
-                src={
-                  slide.image ||
-                  "/placeholder.svg?height=700&width=1200&query=luxury watch on elegant background"
-                }
-                alt={slide.title}
+                src={slide.image}
+                alt={slide.title || "Slide Image"}
                 fill
                 className="object-cover"
                 priority={index === 0}
                 sizes="100vw"
+                // optional: placeholder blur
+                // placeholder="blur"
+                // blurDataURL="/placeholder.svg"
               />
               <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/30" />
             </div>

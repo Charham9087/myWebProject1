@@ -16,12 +16,10 @@ export default function MostSellingPage() {
   const [touchEnd, setTouchEnd] = useState(null)
   const minSwipeDistance = 50
 
-  // ✅ Pixel event helper (safe check)
+  // ✅ Pixel event helper
   const trackPixelEvent = (eventName, data = {}) => {
     if (typeof window !== "undefined" && typeof fbq === "function") {
       fbq("track", eventName, data)
-    } else {
-      console.log(`FB Event [${eventName}]`, data)
     }
   }
 
@@ -58,7 +56,6 @@ export default function MostSellingPage() {
   const prevSlide = () => setCurrentIndex((prev) => (prev <= 0 ? maxIndex : prev - 1))
 
   const handleViewDetails = (id, product) => {
-    // ✅ Fire view event
     trackPixelEvent("ViewContent", {
       content_name: product.title,
       content_ids: [product._id],
@@ -66,7 +63,6 @@ export default function MostSellingPage() {
       value: product.discountedPrice,
       currency: "PKR",
     })
-
     window.location.href = `/viewDetails?_id=${id}`
   }
 
@@ -80,8 +76,6 @@ export default function MostSellingPage() {
       : [...existingCart, { ...product, quantity: 1 }]
 
     localStorage.setItem("cartItems", JSON.stringify(updatedCart))
-
-    // ✅ Fire add-to-cart event
     trackPixelEvent("AddToCart", {
       content_name: product.title,
       content_ids: [product._id],
@@ -89,19 +83,16 @@ export default function MostSellingPage() {
       value: product.discountedPrice,
       currency: "PKR",
     })
-
     alert("Added to cart successfully!")
   }
 
   const handleBuyNow = (product) => {
-    // ✅ Fire checkout event
     trackPixelEvent("InitiateCheckout", {
       content_name: product.title,
       content_ids: [product._id],
       value: product.discountedPrice,
       currency: "PKR",
     })
-
     window.location.href = `/checkoutPage?_id=${product._id}`
   }
 
@@ -162,7 +153,7 @@ export default function MostSellingPage() {
                     <div className="aspect-[4/3] flex items-center justify-center relative w-full">
                       <Image
                         src={product.images?.[0] || "/placeholder.svg"}
-                        alt={product.title}
+                        alt={product.title || "Product Image"}
                         fill
                         className="object-contain group-hover:scale-105 transition-transform duration-700"
                         priority={index < itemsPerView}
@@ -170,7 +161,6 @@ export default function MostSellingPage() {
                         placeholder="blur"
                         blurDataURL="/placeholder-blur.jpg"
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                        onError={(e) => (e.target.src = "/product-placeholder.jpg")}
                       />
                     </div>
 
