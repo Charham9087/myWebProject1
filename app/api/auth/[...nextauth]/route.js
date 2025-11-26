@@ -17,17 +17,22 @@ export const authOptions = {
 
     callbacks: {
         async signIn({ user }) {
+            console.log("signIn callback - user:", user);
             return true;
         },
 
         async jwt({ token, user }) {
+            console.log("jwt callback - entry token:", token, "user:", user);
             if (user) {
                 try {
                     const dbUser = await SaveUSertoDB(user);
+                    console.log("jwt callback - dbUser:", dbUser);
 
                     // Put only safe values in JWT
                     token.id = dbUser._id?.toString() || dbUser.id;
                     token.role = dbUser.role || "user";
+
+                    console.log("jwt callback - token after set:", { id: token.id, role: token.role });
 
                 } catch (error) {
                     console.error("❌ Error saving user to DB:", error);
@@ -38,10 +43,12 @@ export const authOptions = {
         },
 
         async session({ session, token }) {
+            console.log("session callback - incoming token:", token, "session before:", session);
             if (session.user) {
                 session.user.id = token.id;
                 session.user.role = token.role;
             }
+            console.log("session callback - session after:", session);
             return session;
         },
     },
