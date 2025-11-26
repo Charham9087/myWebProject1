@@ -17,10 +17,14 @@ export default function LoginPage() {
           Sign in to continue
         </p>
         <Button
-        onClick={()=>signIn('google')}>
+          type="button" // ✅ important
+          onClick={() => signIn("google", { callbackUrl: "/" })}
+          className="flex items-center justify-center gap-2"
+        >
           <FcGoogle size={20} />
           Sign in with Google
         </Button>
+
       </div>
     </div>
   );
