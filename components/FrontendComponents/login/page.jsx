@@ -17,7 +17,7 @@ export default function LoginPage() {
           Sign in to continue
         </p>
         <Button
-        onClick={()=>signIn('google',{callbackUrl:"/"})}>
+        onClick={()=>signIn('google')}>
           <FcGoogle size={20} />
           Sign in with Google
         </Button>
